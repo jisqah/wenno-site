@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wenno — Politique de confidentialité</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --gray: #999;
+    --light: #f8f8f8;
+    --border: rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--black); }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 52px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: 24px; letter-spacing: 0.18em; text-transform: lowercase;
+    color: var(--black); text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 44px; list-style: none; }
+  .nav-links a {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gray); text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--black); }
+
+  .page-hero { padding: 140px 52px 72px; border-bottom: 1px solid var(--border); }
+  .page-hero-inner { max-width: 860px; margin: 0 auto; }
+  .page-tag {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 200;
+    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gray); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .page-tag::before { content: ''; display: block; width: 24px; height: 1px; background: var(--gray); }
+  .page-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: clamp(36px, 5vw, 64px); letter-spacing: 0.01em; line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .page-meta { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px; color: var(--gray); }
+
+  .page-content { max-width: 860px; margin: 0 auto; padding: 72px 52px 120px; }
+
+  .section { margin-bottom: 52px; padding-bottom: 52px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase;
+    margin-bottom: 20px; color: var(--black);
+    display: flex; align-items: center; gap: 16px;
+  }
+  h2::before {
+    content: attr(data-num);
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: 11px; color: var(--gray); letter-spacing: 0.1em; min-width: 24px;
+  }
+
+  p { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 15px; line-height: 1.85; color: #555; }
+  p + p { margin-top: 14px; }
+
+  ul { list-style: none; margin-top: 14px; }
+  ul li {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 15px; line-height: 1.85; color: #555;
+    padding: 4px 0 4px 20px; position: relative;
+  }
+  ul li::before { content: '—'; position: absolute; left: 0; color: #ccc; }
+
+  .highlight-box {
+    background: var(--light); border-radius: 16px;
+    padding: 28px 32px; margin-top: 20px; border: 1px solid var(--border);
+  }
+  strong { font-weight: 400; color: var(--black); }
+  a { color: var(--black); }
+  a:hover { opacity: 0.6; }
+
+  footer {
+    background: var(--white); border-top: 1px solid var(--border);
+    padding: 44px 52px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .footer-logo {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: 22px; letter-spacing: 0.18em; text-transform: lowercase;
+    color: var(--black); text-decoration: none;
+  }
+  .footer-links { display: flex; gap: 36px; list-style: none; }
+  .footer-links a {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px;
+    color: var(--gray); text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--black); }
+  .footer-copy { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px; color: #ccc; }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .page-hero { padding: 110px 24px 56px; }
+    .page-content { padding: 52px 24px 80px; }
+    footer { flex-direction: column; text-align: center; padding: 36px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">wenno</a>
+  <ul class="nav-links">
+    <li><a href="/privacy" class="active">Privacy</a></li>
+    <li><a href="/terms">Terms</a></li>
+    <li><a href="mailto:contact@wenno.app">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <p class="page-tag">Wenno · 2026</p>
+    <h1 class="page-title">Politique de<br>confidentialité</h1>
+    <p class="page-meta">Dernière mise à jour — 2026 · <a href="mailto:contact@wenno.app">contact@wenno.app</a></p>
+  </div>
+</div>
+
+<div class="page-content">
+
+  <div class="section">
+    <h2 data-num="01">Responsable du traitement</h2>
+    <div class="highlight-box">
+      <p>
+        <strong>Jessica Ibidakpo</strong><br>
+        Entrepreneur individuel – Micro-entreprise<br>
+        SIRET : 880 382 940 00018<br>
+        France · <a href="mailto:contact@wenno.app">contact@wenno.app</a>
+      </p>
+    </div>
+    <p style="margin-top:20px">Jessica Ibidakpo agit en qualité de responsable du traitement au sens du RGPD.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="02">Données collectées</h2>
+    <p>Wenno collecte uniquement les données strictement nécessaires à son fonctionnement : informations de profil, contenus créés dans l'application, et données techniques liées à l'utilisation du service.</p>
+    <p>Wenno ne collecte pas de données sensibles au sens de l'article 9 du RGPD.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="03">Utilisation des données</h2>
+    <p>Les données collectées servent exclusivement à faire fonctionner l'application, améliorer l'expérience utilisateur, prévenir les abus et respecter les obligations légales.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="04">Base légale</h2>
+    <ul>
+      <li>Exécution du contrat de service</li>
+      <li>Consentement de l'utilisateur</li>
+      <li>Intérêt légitime de Wenno (sécurité, amélioration du service)</li>
+      <li>Obligations légales applicables</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2 data-num="05">Visibilité des données</h2>
+    <p>Les informations du profil sont visibles uniquement des membres autorisés, selon les paramètres de confidentialité choisis. Les messages privés ne sont accessibles à aucun autre utilisateur.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="06">Conservation</h2>
+    <p>Les données sont conservées pendant la durée d'activité du compte. Les comptes inactifs depuis plus de 12 mois peuvent être supprimés après notification préalable.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="07">Suppression du compte</h2>
+    <p>L'utilisateur peut supprimer son compte à tout moment depuis l'application.</p>
+    <div class="highlight-box">
+      <p><strong>Paramètres → Gestion du compte → Supprimer mon compte</strong></p>
+      <p style="margin-top:12px">La suppression entraîne l'effacement immédiat et définitif de toutes les données personnelles, sauf obligations légales contraires. Une confirmation par email est envoyée.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 data-num="08">Sécurité</h2>
+    <p>Wenno met en œuvre des mesures de sécurité adaptées pour protéger les données contre tout accès non autorisé, perte ou divulgation.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="09">Sous-traitants</h2>
+    <p>Wenno fait appel à des prestataires techniques tiers pour l'hébergement, l'authentification, l'envoi d'emails et la distribution de l'application. Ces prestataires sont contractuellement tenus de respecter les normes de protection des données.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="10">Transferts hors UE</h2>
+    <p>Certaines données sont traitées aux États-Unis par nos prestataires. Ces transferts sont encadrés par les garanties appropriées conformément au RGPD (clauses contractuelles types / Data Privacy Framework UE–États-Unis).</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="11">Droits des utilisateurs</h2>
+    <p>Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité de vos données.</p>
+    <p>Pour exercer ces droits : <a href="mailto:contact@wenno.app">contact@wenno.app</a></p>
+    <p>Réclamation possible auprès de la <strong>CNIL</strong> : <a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a></p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="12">Mineurs</h2>
+    <p>Wenno est réservée aux personnes de 18 ans et plus. Tout compte appartenant à un mineur identifié sera supprimé sans préavis.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="13">Cookies</h2>
+    <p>L'application Wenno n'utilise pas de cookies de tracking publicitaire. Seules des données techniques minimales sont stockées localement pour améliorer l'expérience utilisateur.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="14">Modifications</h2>
+    <p>Cette politique peut être mise à jour à tout moment. En cas de changement substantiel, les utilisateurs seront informés au moins 30 jours à l'avance par email ou notification dans l'application.</p>
+    <p>Version en vigueur accessible à l'adresse : <a href="https://wenno.app/privacy">wenno.app/privacy</a></p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/" class="footer-logo">wenno</a>
+  <ul class="footer-links">
+    <li><a href="/privacy">Politique de confidentialité</a></li>
+    <li><a href="/terms">Conditions d'utilisation</a></li>
+    <li><a href="mailto:contact@wenno.app">contact@wenno.app</a></li>
+  </ul>
+  <span class="footer-copy">© Wenno 2026</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wenno — Conditions d'utilisation</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --gray: #999;
+    --light: #f8f8f8;
+    --border: rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--black); }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 52px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: 24px; letter-spacing: 0.18em; text-transform: lowercase;
+    color: var(--black); text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 44px; list-style: none; }
+  .nav-links a {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gray); text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--black); }
+
+  .page-hero { padding: 140px 52px 72px; border-bottom: 1px solid var(--border); }
+  .page-hero-inner { max-width: 860px; margin: 0 auto; }
+  .page-tag {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 200;
+    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gray); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .page-tag::before { content: ''; display: block; width: 24px; height: 1px; background: var(--gray); }
+  .page-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: clamp(36px, 5vw, 64px); letter-spacing: 0.01em; line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .page-meta { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px; color: var(--gray); }
+
+  .page-content { max-width: 860px; margin: 0 auto; padding: 72px 52px 120px; }
+
+  .section { margin-bottom: 52px; padding-bottom: 52px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase;
+    margin-bottom: 20px; color: var(--black);
+    display: flex; align-items: center; gap: 16px;
+  }
+  h2::before {
+    content: attr(data-num);
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: 11px; color: var(--gray); letter-spacing: 0.1em; min-width: 24px;
+  }
+
+  p { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 15px; line-height: 1.85; color: #555; }
+  p + p { margin-top: 14px; }
+
+  ul { list-style: none; margin-top: 14px; }
+  ul li {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 15px; line-height: 1.85; color: #555;
+    padding: 4px 0 4px 20px; position: relative;
+  }
+  ul li::before { content: '—'; position: absolute; left: 0; color: #ccc; }
+
+  .highlight-box {
+    background: var(--light); border-radius: 16px;
+    padding: 28px 32px; margin-top: 20px; border: 1px solid var(--border);
+  }
+  strong { font-weight: 400; color: var(--black); }
+  a { color: var(--black); }
+  a:hover { opacity: 0.6; }
+
+  footer {
+    background: var(--white); border-top: 1px solid var(--border);
+    padding: 44px 52px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .footer-logo {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: 22px; letter-spacing: 0.18em; text-transform: lowercase;
+    color: var(--black); text-decoration: none;
+  }
+  .footer-links { display: flex; gap: 36px; list-style: none; }
+  .footer-links a {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px;
+    color: var(--gray); text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--black); }
+  .footer-copy { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px; color: #ccc; }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .page-hero { padding: 110px 24px 56px; }
+    .page-content { padding: 52px 24px 80px; }
+    footer { flex-direction: column; text-align: center; padding: 36px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">wenno</a>
+  <ul class="nav-links">
+    <li><a href="/privacy">Privacy</a></li>
+    <li><a href="/terms" class="active">Terms</a></li>
+    <li><a href="mailto:contact@wenno.app">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <p class="page-tag">Wenno · 2026</p>
+    <h1 class="page-title">Conditions<br>d'utilisation</h1>
+    <p class="page-meta">En vigueur depuis 2026 · <a href="mailto:contact@wenno.app">contact@wenno.app</a></p>
+  </div>
+</div>
+
+<div class="page-content">
+
+  <div class="section">
+    <h2 data-num="01">Éditeur</h2>
+    <div class="highlight-box">
+      <p>
+        <strong>Wenno</strong> est une application éditée par :<br><br>
+        <strong>Jessica Ibidakpo</strong><br>
+        Entrepreneur individuel – Micro-entreprise<br>
+        SIRET : 880 382 940 00018 · France<br>
+        <a href="mailto:contact@wenno.app">contact@wenno.app</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 data-num="02">Acceptation</h2>
+    <p>L'utilisation de l'application Wenno implique l'acceptation pleine et entière des présentes conditions. En créant un compte, l'utilisateur confirme avoir lu, compris et accepté ces conditions ainsi que la politique de confidentialité.</p>
+    <p>L'accès à Wenno est réservé aux personnes âgées de <strong>18 ans et plus</strong>.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="03">Description du service</h2>
+    <p>Wenno est une application mobile permettant à ses utilisateurs de constituer un carnet d'adresses personnel (restaurants, bars, cafés, hôtels et autres lieux), et de découvrir des personnes partageant les mêmes endroits favoris via un système de matching par affinité.</p>
+    <p>Wenno se réserve le droit de faire évoluer les fonctionnalités du service à tout moment.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="04">Compte utilisateur</h2>
+    <p>L'utilisateur est responsable de la confidentialité de son accès et de l'ensemble des activités réalisées depuis son compte. Toute utilisation frauduleuse ou non autorisée doit être signalée immédiatement à <a href="mailto:contact@wenno.app">contact@wenno.app</a>.</p>
+    <p>Wenno se réserve le droit de suspendre ou supprimer tout compte en cas de violation des présentes conditions.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="05">Contenu utilisateur</h2>
+    <p>L'utilisateur est seul responsable des contenus qu'il publie (lieux, photos, messages, descriptions). En publiant du contenu sur Wenno, l'utilisateur garantit qu'il dispose des droits nécessaires et qu'il ne porte pas atteinte aux droits de tiers.</p>
+    <p>Il est interdit de publier tout contenu :</p>
+    <ul>
+      <li>Illicite, diffamatoire, injurieux ou discriminatoire</li>
+      <li>Portant atteinte à la vie privée d'autrui</li>
+      <li>À caractère commercial non autorisé (spam, publicité)</li>
+      <li>Contenant des données personnelles de tiers sans leur consentement</li>
+    </ul>
+    <p style="margin-top:16px">Wenno se réserve le droit de supprimer tout contenu contrevenant à ces règles, sans préavis.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="06">Propriété intellectuelle</h2>
+    <p>L'application Wenno, son design, sa marque, son logo et l'ensemble de ses éléments sont la propriété exclusive de Jessica Ibidakpo, protégés par le droit de la propriété intellectuelle.</p>
+    <p>La marque <strong>Wenno</strong> est déposée à l'INPI. Toute reproduction, imitation ou utilisation non autorisée est strictement interdite.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="07">Abonnement et paiement</h2>
+    <p>Wenno propose une version gratuite et une version Premium. Les conditions tarifaires et les modalités d'abonnement sont précisées dans l'application au moment de la souscription.</p>
+    <p>Les paiements sont gérés via l'App Store d'Apple. Les règles de remboursement d'Apple s'appliquent.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="08">Disponibilité du service</h2>
+    <p>Wenno s'efforce d'assurer la disponibilité du service 24h/24, 7j/7, mais ne peut garantir une disponibilité ininterrompue. Des interruptions pour maintenance ou en cas de force majeure peuvent survenir sans préavis.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="09">Limitation de responsabilité</h2>
+    <p>Wenno est un outil de découverte et de mise en relation basé sur des affinités de lieux. Wenno ne peut être tenu responsable des rencontres, interactions ou situations découlant de l'utilisation de l'application.</p>
+    <p>Wenno ne vérifie pas l'exactitude des informations relatives aux lieux enregistrés par les utilisateurs.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="10">Résiliation</h2>
+    <p>L'utilisateur peut cesser d'utiliser Wenno et supprimer son compte à tout moment depuis l'application.</p>
+    <div class="highlight-box">
+      <p><strong>Paramètres → Gestion du compte → Supprimer mon compte</strong></p>
+    </div>
+    <p style="margin-top:16px">Wenno se réserve le droit de résilier l'accès de tout utilisateur ne respectant pas les présentes conditions.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="11">Droit applicable</h2>
+    <p>Les présentes conditions sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux compétents de Paris seront seuls compétents.</p>
+  </div>
+
+  <div class="section">
+    <h2 data-num="12">Modifications</h2>
+    <p>Wenno se réserve le droit de modifier les présentes conditions à tout moment. Les utilisateurs seront informés de toute modification substantielle par email ou notification dans l'application, au moins 30 jours avant leur entrée en vigueur.</p>
+    <p>La version en vigueur est accessible à l'adresse : <a href="https://wenno.app/terms">wenno.app/terms</a></p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/" class="footer-logo">wenno</a>
+  <ul class="footer-links">
+    <li><a href="/privacy">Politique de confidentialité</a></li>
+    <li><a href="/terms">Conditions d'utilisation</a></li>
+    <li><a href="mailto:contact@wenno.app">contact@wenno.app</a></li>
+  </ul>
+  <span class="footer-copy">© Wenno 2026</span>
+</footer>
+
+</body>
+</html>
