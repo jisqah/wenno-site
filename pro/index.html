@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wenno pro — Gérer ma fiche</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --gray: #999;
+    --light: #f8f8f8;
+    --border: rgba(0,0,0,0.08);
+    /* variantes pour usage sur fond sombre (cette page est fond noir en entier) */
+    --border-dark: rgba(255,255,255,0.12);
+    --text-dim: rgba(255,255,255,0.55);
+    --text-dimmer: rgba(255,255,255,0.35);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  /* NAV */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .nav-logo {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100; font-size: 22px;
+    letter-spacing: 0.18em; text-transform: lowercase;
+    text-decoration: none;
+  }
+  .nav-tag {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .nav-signout {
+    background: none; border: 1px solid var(--border-dark);
+    color: var(--text-dim); font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px 16px; border-radius: 40px; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .nav-signout:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* SCREENS — toggled via .visible */
+  .screen { display: none; }
+  .screen.visible { display: block; }
+
+  /* CENTERED narrow screens (loading / login / none / picker) */
+  .center-screen {
+    min-height: calc(100vh - 73px);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 40px 24px;
+  }
+  .center-box { max-width: 420px; width: 100%; }
+  .center-eyebrow {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 200;
+    font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 20px;
+  }
+  .center-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: clamp(28px, 4vw, 38px);
+    letter-spacing: 0.01em; line-height: 1.15;
+    margin-bottom: 18px;
+  }
+  .center-desc {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 15px; line-height: 1.7; color: var(--text-dim);
+    margin-bottom: 36px;
+  }
+
+  /* FORM ELEMENTS (login + editor) */
+  .field { margin-bottom: 20px; text-align: left; }
+  .field label {
+    display: block;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .field input[type="email"],
+  .field input[type="text"],
+  .field input[type="url"],
+  .field textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-color: rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.06);
+  }
+  .field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .field-readonly-value {
+    padding: 13px 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
+    color: var(--text-dim);
+  }
+  .field-hint {
+    font-size: 11px; color: var(--text-dimmer); margin-top: 6px;
+  }
+
+  .btn-primary {
+    display: inline-block; width: 100%;
+    padding: 15px 24px;
+    background: var(--white); color: var(--black);
+    border: none; border-radius: 60px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 400;
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+  .btn-outline {
+    display: inline-block;
+    padding: 12px 22px;
+    background: transparent; color: var(--white);
+    border: 1px solid var(--border-dark); border-radius: 60px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
+
+  .form-error {
+    font-size: 13px; color: #ff8a8a; margin-top: 14px; text-align: left;
+  }
+  .form-success {
+    font-size: 14px; color: var(--text-dim); line-height: 1.6;
+  }
+
+  /* PICKER */
+  .picker-list { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  .picker-item {
+    display: block; width: 100%;
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-dark); border-radius: 12px;
+    color: var(--white); text-decoration: none;
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 15px;
+    cursor: pointer; text-align: left;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .picker-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); }
+
+  /* EDITOR LAYOUT */
+  .editor-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    padding: 28px 0 20px;
+  }
+  .editor-header-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 200;
+    font-size: 20px; letter-spacing: 0.02em;
+  }
+  .save-status {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 12px; color: var(--text-dimmer);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .save-status .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-dimmer);
+  }
+  .save-status.saving .dot { background: #e8c766; }
+  .save-status.saved .dot { background: #7ed996; }
+  .save-status.error .dot { background: #ff8a8a; }
+
+  .editor-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 44px;
+    padding-bottom: 80px;
+  }
+  .panel-preview { order: 1; }
+  .panel-form { order: 2; }
+
+  @media (min-width: 901px) {
+    .editor-layout { grid-template-columns: 440px 1fr; align-items: start; }
+    .panel-form { order: 1; position: sticky; top: 24px; }
+    .panel-preview { order: 2; }
+  }
+
+  .panel-block {
+    padding: 28px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-dark);
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+  .panel-block-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 22px;
+  }
+
+  .readonly-grid { display: grid; gap: 14px; margin-bottom: 4px; }
+
+  /* dynamic list rows (gallery photos / menu items) */
+  .list-row {
+    display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px;
+  }
+  .list-row > div { flex: 1; }
+  .btn-remove {
+    flex-shrink: 0;
+    width: 42px; height: 42px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-dark);
+    border-radius: 10px; color: var(--text-dim);
+    font-size: 18px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-remove:hover { border-color: #ff8a8a; color: #ff8a8a; }
+  .btn-add {
+    width: 100%; padding: 12px; margin-top: 4px;
+    background: transparent; border: 1px dashed var(--border-dark);
+    border-radius: 10px; color: var(--text-dim);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-add:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+
+  .menu-item-row {
+    padding: 14px; margin-bottom: 12px;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border-dark);
+    border-radius: 12px;
+  }
+  .menu-item-row .field { margin-bottom: 10px; }
+  .menu-item-row .field:last-of-type { margin-bottom: 0; }
+
+  .color-row { display: flex; align-items: center; gap: 12px; }
+  .color-row input[type="color"] {
+    width: 46px; height: 42px; padding: 2px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-dark);
+    border-radius: 10px; cursor: pointer;
+  }
+
+  .publish-block { padding: 24px 28px; }
+  .publish-status-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: 40px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .badge-published { background: rgba(126,217,150,0.14); color: #7ed996; border: 1px solid rgba(126,217,150,0.3); }
+  .badge-draft { background: rgba(255,255,255,0.06); color: var(--text-dim); border: 1px solid var(--border-dark); }
+  .publish-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 18px; }
+  .btn-unpublish { background: transparent; color: var(--white); border: 1px solid var(--border-dark); }
+  .btn-unpublish:hover { border-color: #ff8a8a; color: #ff8a8a; opacity: 1; background: rgba(255,138,138,0.06); }
+
+  /* ---- LIVE PREVIEW (matches DIRECTION VISUELLE) ---- */
+  .preview-card {
+    border: 1px solid var(--border-dark);
+    border-radius: 24px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.015);
+  }
+  .preview-inner { padding: 32px; }
+  .preview-cover {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover;
+    border-radius: 16px; margin-bottom: 26px;
+    background: rgba(255,255,255,0.04);
+  }
+  .preview-cover-placeholder {
+    width: 100%; aspect-ratio: 16/9;
+    border-radius: 16px; margin-bottom: 26px;
+    background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dimmer); font-size: 12px;
+  }
+  .preview-name {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 200;
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: 0.01em; line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .preview-location-row {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 10px;
+  }
+  .preview-location-row svg { flex-shrink: 0; opacity: 0.7; }
+  .preview-address {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.7);
+    margin-bottom: 16px;
+  }
+  .preview-category-pill {
+    display: inline-block;
+    padding: 6px 14px; margin-bottom: 24px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 40px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+  }
+  .preview-desc {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.85);
+    margin-bottom: 30px;
+    white-space: pre-wrap;
+  }
+  .preview-hours-accordion {
+    border: 1px solid var(--border-dark); border-radius: 16px;
+    margin-bottom: 34px; overflow: hidden;
+  }
+  .preview-hours-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    background: transparent; border: none; color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px;
+    cursor: pointer;
+  }
+  .preview-hours-chevron {
+    flex-shrink: 0; transition: transform 0.2s; opacity: 0.7;
+  }
+  .preview-hours-toggle.open .preview-hours-chevron { transform: rotate(180deg); }
+  .preview-hours-content {
+    display: none;
+    padding: 0 20px 18px;
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px;
+    line-height: 1.7; color: rgba(255,255,255,0.75);
+    white-space: pre-wrap;
+  }
+  .preview-hours-content.open { display: block; }
+
+  .preview-section-label {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 16px;
+  }
+  .preview-gallery {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-bottom: 34px;
+  }
+  .preview-gallery img {
+    width: 100%; aspect-ratio: 1/1; object-fit: cover;
+    border-radius: 12px; background: rgba(255,255,255,0.04);
+  }
+  .preview-empty-note {
+    font-size: 12px; color: var(--text-dimmer); font-style: italic;
+  }
+
+  .preview-menu-toggle {
+    width: 100%; padding: 14px 22px;
+    background: transparent; color: var(--white);
+    border: 1px solid var(--border-dark); border-radius: 60px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .preview-menu-toggle:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
+  .preview-menu-list {
+    margin-top: 18px; display: none; flex-direction: column; gap: 16px;
+  }
+  .preview-menu-list.open { display: flex; }
+  .preview-menu-item {
+    display: flex; justify-content: space-between; gap: 16px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border-dark);
+  }
+  .preview-menu-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .preview-menu-item-main { flex: 1; }
+  .preview-menu-item-name {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; margin-bottom: 4px;
+  }
+  .preview-menu-item-desc {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12.5px;
+    color: var(--text-dim); line-height: 1.5;
+  }
+  .preview-menu-item-price {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px;
+    color: var(--white); white-space: nowrap;
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 18px 20px; }
+    main { padding: 0 16px; }
+    .panel-block { padding: 22px; }
+    .preview-inner { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">wenno</a>
+  <span class="nav-tag">Espace partenaire</span>
+  <button class="nav-signout" id="signOutBtn" style="display:none;">Déconnexion</button>
+</nav>
+
+<main>
+
+  <!-- LOADING -->
+  <div class="screen visible center-screen" id="screen-loading">
+    <div class="center-box">
+      <p class="form-success">Chargement…</p>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen center-screen" id="screen-login">
+    <div class="center-box">
+      <p class="center-eyebrow">Espace partenaire</p>
+      <h1 class="center-title">Gérer ma fiche wenno</h1>
+      <p class="center-desc">Connecte-toi avec l'adresse email associée à ton partenariat pour modifier ta fiche.</p>
+
+      <form id="loginForm">
+        <div class="field" style="text-align:left;">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="email" placeholder="toi@exemple.com">
+        </div>
+        <button type="submit" class="btn-primary" id="loginSubmitBtn">Recevoir mon lien de connexion</button>
+        <p class="form-error" id="loginError" style="display:none;"></p>
+      </form>
+
+      <div id="loginSuccess" style="display:none;">
+        <p class="form-success">Un lien de connexion vient d'être envoyé. Vérifie ta boîte mail (et tes spams) et clique dessus pour continuer.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NO PROFILE -->
+  <div class="screen center-screen" id="screen-none">
+    <div class="center-box">
+      <p class="center-eyebrow">Espace partenaire</p>
+      <h1 class="center-title">Aucune fiche associée</h1>
+      <p class="center-desc">Aucune fiche ne vous est associée pour l'instant, contactez l'équipe Wenno.</p>
+      <a href="mailto:contact@wenno.app" class="btn-outline">contact@wenno.app</a>
+    </div>
+  </div>
+
+  <!-- PICKER (plusieurs fiches) -->
+  <div class="screen center-screen" id="screen-picker">
+    <div class="center-box" style="max-width: 520px;">
+      <p class="center-eyebrow">Espace partenaire</p>
+      <h1 class="center-title">Choisis une fiche</h1>
+      <div class="picker-list" id="pickerList"></div>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="screen" id="screen-editor">
+    <div class="editor-header">
+      <span class="editor-header-title" id="editorHeaderTitle"></span>
+      <span class="save-status" id="saveStatus"><span class="dot"></span><span id="saveStatusText">—</span></span>
+    </div>
+
+    <div class="editor-layout">
+
+      <!-- FORM -->
+      <div class="panel-form">
+
+        <div class="panel-block">
+          <p class="panel-block-title">Informations (gérées par Wenno)</p>
+          <div class="readonly-grid">
+            <div>
+              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Nom</label>
+              <div class="field-readonly-value" id="ro-business_name">—</div>
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Adresse</label>
+              <div class="field-readonly-value" id="ro-address">—</div>
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Téléphone</label>
+              <div class="field-readonly-value" id="ro-phone">—</div>
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Catégorie</label>
+              <div class="field-readonly-value" id="ro-category">—</div>
+            </div>
+          </div>
+          <p class="field-hint">Une erreur sur ces informations ? Écris à contact@wenno.app.</p>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title">Présentation</p>
+          <div class="field">
+            <label for="f-description">Description</label>
+            <textarea id="f-description" placeholder="Présente ton lieu en quelques phrases…"></textarea>
+          </div>
+          <div class="field">
+            <label for="f-hours">Horaires</label>
+            <textarea id="f-hours" placeholder="Mar – Sam, 18h – 02h&#10;Fermé dim &amp; lun" style="min-height: 70px;"></textarea>
+            <p class="field-hint">Texte libre, plusieurs lignes possibles.</p>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="f-brand_color">Couleur de marque (optionnel)</label>
+            <div class="color-row">
+              <input type="color" id="f-brand_color" value="#0a0a0a">
+              <span class="field-hint" id="brandColorValue" style="margin-top:0;">Aucune</span>
+              <button type="button" class="btn-remove" id="clearBrandColor" title="Retirer la couleur" style="margin-left:auto;">×</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title">Photos</p>
+          <div class="field">
+            <label for="f-logo_url">Logo (URL)</label>
+            <input type="url" id="f-logo_url" placeholder="https://…">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="f-cover_photo_url">Photo de couverture (URL)</label>
+            <input type="url" id="f-cover_photo_url" placeholder="https://…">
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title">Galerie photo</p>
+          <div id="galleryList"></div>
+          <button type="button" class="btn-add" id="addGalleryPhoto">+ Ajouter une photo</button>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title">Menu</p>
+          <div id="menuList"></div>
+          <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un item</button>
+        </div>
+
+        <div class="panel-block publish-block">
+          <div class="publish-status-row">
+            <span class="badge badge-draft" id="publishBadge">Brouillon</span>
+          </div>
+          <p class="publish-desc" id="publishDesc">Votre fiche n'est pas encore visible dans l'app Wenno. Publiez-la quand vous êtes prête.</p>
+          <button type="button" class="btn-primary" id="publishBtn">Publier ma fiche</button>
+        </div>
+
+      </div>
+
+      <!-- LIVE PREVIEW -->
+      <div class="panel-preview">
+        <div class="preview-card">
+          <div class="preview-inner">
+            <img class="preview-cover" id="p-cover" style="display:none;" alt="Photo de couverture">
+            <div class="preview-cover-placeholder" id="p-cover-placeholder">Aucune photo de couverture</div>
+
+            <h2 class="preview-name" id="p-name">—</h2>
+
+            <div class="preview-location-row" id="p-location-row">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s7-7.58 7-12.5A7 7 0 0 0 5 9.5C5 14.42 12 22 12 22z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+              <span id="p-city">—</span>
+            </div>
+
+            <p class="preview-address" id="p-address">—</p>
+
+            <span class="preview-category-pill" id="p-category-pill" style="display:none;">—</span>
+
+            <p class="preview-desc" id="p-desc" style="display:none;"></p>
+
+            <div class="preview-hours-accordion" id="p-hours-accordion" style="display:none;">
+              <button type="button" class="preview-hours-toggle" id="p-hours-toggle" aria-expanded="false">
+                <span>Horaires</span>
+                <svg class="preview-hours-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="preview-hours-content" id="p-hours-content">
+                <span id="p-hours-text"></span>
+              </div>
+            </div>
+
+            <p class="preview-section-label">Photos</p>
+            <div class="preview-gallery" id="p-gallery"></div>
+            <p class="preview-empty-note" id="p-gallery-empty">Aucune photo ajoutée pour l'instant.</p>
+
+            <button type="button" class="preview-menu-toggle" id="p-menu-toggle" style="display:none;">Voir le menu</button>
+            <div class="preview-menu-list" id="p-menu-list"></div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---- Config ----------------------------------------------------------
+  // Cle publique (anon/publishable) : securisee par les policies RLS sur
+  // pro_profiles / pro_profile_editors, jamais la service_role key.
+  var SUPABASE_URL = 'https://tefngqjhyjyqpvvarubk.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_uzc_pZM7fiRBp5RXFz4m1Q_qbt-lNRS';
+
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true // essentiel : parse le token du lien magique dans l'URL au chargement
+    }
+  });
+
+  // ---- State -------------------------------------------------------------
+  var profile = null;       // ligne pro_profiles courante
+  var cityLabel = '';       // nom de ville resolu
+  var saveTimer = null;
+  var hoursOpen = false;    // etat ouvert/ferme de l'accordeon Horaires, persiste entre les re-rendus
+
+  // ---- Ecrans --------------------------------------------------------------
+  var screens = ['loading', 'login', 'none', 'picker', 'editor'];
+  function showScreen(name) {
+    screens.forEach(function (s) {
+      document.getElementById('screen-' + s).classList.toggle('visible', s === name);
+    });
+    document.getElementById('signOutBtn').style.display = (name === 'none' || name === 'picker' || name === 'editor') ? 'inline-block' : 'none';
+  }
+
+  // ---- Auth ----------------------------------------------------------------
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('loginEmail').value.trim();
+    var btn = document.getElementById('loginSubmitBtn');
+    var errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+
+    sb.auth.signInWithOtp({
+      email: email,
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
+    }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Recevoir mon lien de connexion';
+      if (res.error) {
+        errEl.textContent = "Impossible d'envoyer le lien. Vérifie l'adresse et réessaie.";
+        errEl.style.display = 'block';
+        return;
+      }
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('loginSuccess').style.display = 'block';
+    });
+  });
+
+  document.getElementById('signOutBtn').addEventListener('click', function () {
+    sb.auth.signOut().then(function () { window.location.reload(); });
+  });
+
+  function init() {
+    sb.auth.getSession().then(function (res) {
+      var session = res.data && res.data.session;
+      if (session) { onAuthenticated(session.user); }
+      else { showScreen('login'); }
+    });
+
+    sb.auth.onAuthStateChange(function (event, session) {
+      if (event === 'SIGNED_IN' && session) { onAuthenticated(session.user); }
+      if (event === 'SIGNED_OUT') { showScreen('login'); }
+    });
+  }
+
+  // ---- Chargement des fiches accessibles ------------------------------------
+  function onAuthenticated(user) {
+    showScreen('loading');
+    sb.from('pro_profile_editors')
+      .select('pro_profile_id, pro_profiles(*)')
+      .eq('user_id', user.id)
+      .then(function (res) {
+        if (res.error) {
+          console.error('[pro] load editors error', res.error);
+          showScreen('none');
+          return;
+        }
+        var profiles = (res.data || [])
+          .map(function (row) { return row.pro_profiles; })
+          .filter(Boolean);
+
+        if (profiles.length === 0) { showScreen('none'); }
+        else if (profiles.length === 1) { openEditor(profiles[0]); }
+        else { showPicker(profiles); }
+      });
+  }
+
+  function showPicker(profiles) {
+    var list = document.getElementById('pickerList');
+    list.innerHTML = '';
+    profiles.forEach(function (p) {
+      var btn = document.createElement('button');
+      btn.className = 'picker-item';
+      btn.textContent = p.business_name;
+      btn.addEventListener('click', function () { openEditor(p); });
+      list.appendChild(btn);
+    });
+    showScreen('picker');
+  }
+
+  // ---- Resolution du nom de ville --------------------------------------------
+  function resolveCityLabel(cityId, cb) {
+    if (!cityId) { cb(''); return; }
+    sb.from('cities_catalog')
+      .select('canonical_name, name')
+      .eq('id', cityId)
+      .maybeSingle()
+      .then(function (res) {
+        if (res.error || !res.data) { cb(''); return; }
+        cb(res.data.canonical_name || res.data.name || '');
+      });
+  }
+
+  // ---- Ouverture de l'editeur ------------------------------------------------
+  function openEditor(p) {
+    profile = p;
+    resolveCityLabel(p.city_id, function (label) {
+      cityLabel = label;
+      fillForm();
+      renderPreview();
+      showScreen('editor');
+    });
+  }
+
+  function fillForm() {
+    document.getElementById('editorHeaderTitle').textContent = profile.business_name || 'Ma fiche';
+
+    document.getElementById('ro-business_name').textContent = profile.business_name || '—';
+    document.getElementById('ro-address').textContent = profile.address || '—';
+    document.getElementById('ro-phone').textContent = profile.phone || '—';
+    document.getElementById('ro-category').textContent = profile.category || '—';
+
+    document.getElementById('f-description').value = profile.description || '';
+    document.getElementById('f-hours').value = profile.hours || '';
+    document.getElementById('f-logo_url').value = profile.logo_url || '';
+    document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
+
+    var color = profile.brand_color || '#0a0a0a';
+    document.getElementById('f-brand_color').value = color;
+    document.getElementById('brandColorValue').textContent = profile.brand_color || 'Aucune';
+
+    renderGalleryList();
+    renderMenuList();
+    renderPublishState();
+  }
+
+  // ---- Champs simples : ecoute + autosave ------------------------------------
+  ['description', 'hours', 'logo_url', 'cover_photo_url'].forEach(function (key) {
+    document.getElementById('f-' + key).addEventListener('input', function (e) {
+      profile[key] = e.target.value;
+      renderPreview();
+      scheduleSave();
+    });
+  });
+
+  document.getElementById('f-brand_color').addEventListener('input', function (e) {
+    profile.brand_color = e.target.value;
+    document.getElementById('brandColorValue').textContent = e.target.value;
+    scheduleSave();
+  });
+  document.getElementById('clearBrandColor').addEventListener('click', function () {
+    profile.brand_color = null;
+    document.getElementById('f-brand_color').value = '#0a0a0a';
+    document.getElementById('brandColorValue').textContent = 'Aucune';
+    scheduleSave();
+  });
+
+  // ---- Galerie photo (liste dynamique) ---------------------------------------
+  function renderGalleryList() {
+    var container = document.getElementById('galleryList');
+    container.innerHTML = '';
+    var photos = profile.gallery_photos || [];
+    photos.forEach(function (url, idx) {
+      var row = document.createElement('div');
+      row.className = 'list-row';
+
+      var inputWrap = document.createElement('div');
+      var input = document.createElement('input');
+      input.type = 'url';
+      input.placeholder = 'https://…';
+      input.value = url;
+      input.addEventListener('input', function (e) {
+        profile.gallery_photos[idx] = e.target.value;
+        renderPreview();
+        scheduleSave();
+      });
+      inputWrap.appendChild(input);
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-remove';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Supprimer cette photo';
+      removeBtn.addEventListener('click', function () {
+        profile.gallery_photos.splice(idx, 1);
+        renderGalleryList();
+        renderPreview();
+        scheduleSave();
+      });
+
+      row.appendChild(inputWrap);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  }
+  document.getElementById('addGalleryPhoto').addEventListener('click', function () {
+    if (!profile.gallery_photos) profile.gallery_photos = [];
+    profile.gallery_photos.push('');
+    renderGalleryList();
+    var inputs = document.querySelectorAll('#galleryList input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+
+  // ---- Menu (liste dynamique d'objets) ---------------------------------------
+  function renderMenuList() {
+    var container = document.getElementById('menuList');
+    container.innerHTML = '';
+    var items = profile.menu_items || [];
+    items.forEach(function (item, idx) {
+      var row = document.createElement('div');
+      row.className = 'menu-item-row';
+
+      row.appendChild(buildMenuField('Nom', item.name, function (v) {
+        profile.menu_items[idx].name = v; renderPreview(); scheduleSave();
+      }));
+      row.appendChild(buildMenuField('Description', item.description, function (v) {
+        profile.menu_items[idx].description = v; renderPreview(); scheduleSave();
+      }));
+      row.appendChild(buildMenuField('Prix', item.price, function (v) {
+        profile.menu_items[idx].price = v; renderPreview(); scheduleSave();
+      }));
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-remove';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Supprimer cet item';
+      removeBtn.style.marginTop = '4px';
+      removeBtn.addEventListener('click', function () {
+        profile.menu_items.splice(idx, 1);
+        renderMenuList();
+        renderPreview();
+        scheduleSave();
+      });
+      row.appendChild(removeBtn);
+
+      container.appendChild(row);
+    });
+  }
+  function buildMenuField(labelText, value, onInput) {
+    var field = document.createElement('div');
+    field.className = 'field';
+    var label = document.createElement('label');
+    label.textContent = labelText;
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = value || '';
+    input.addEventListener('input', function (e) { onInput(e.target.value); });
+    field.appendChild(label);
+    field.appendChild(input);
+    return field;
+  }
+  document.getElementById('addMenuItem').addEventListener('click', function () {
+    if (!profile.menu_items) profile.menu_items = [];
+    profile.menu_items.push({ name: '', description: '', price: '' });
+    renderMenuList();
+  });
+
+  // ---- Publication -------------------------------------------------------
+  function renderPublishState() {
+    var badge = document.getElementById('publishBadge');
+    var desc = document.getElementById('publishDesc');
+    var btn = document.getElementById('publishBtn');
+
+    if (profile.is_published) {
+      badge.textContent = 'Publiée';
+      badge.className = 'badge badge-published';
+      desc.textContent = 'Votre fiche est actuellement visible dans l’app Wenno.';
+      btn.textContent = 'Dépublier';
+      btn.className = 'btn-primary btn-unpublish';
+    } else {
+      badge.textContent = 'Brouillon';
+      badge.className = 'badge badge-draft';
+      desc.textContent = "Votre fiche n'est pas encore visible dans l'app Wenno. Publiez-la quand vous êtes prête.";
+      btn.textContent = 'Publier ma fiche';
+      btn.className = 'btn-primary';
+    }
+  }
+  document.getElementById('publishBtn').addEventListener('click', function () {
+    if (profile.is_published) {
+      if (!window.confirm('Dépublier ta fiche ? Elle ne sera plus visible dans l’app Wenno.')) return;
+    }
+    var nextValue = !profile.is_published;
+    var btn = document.getElementById('publishBtn');
+    btn.disabled = true;
+    sb.from('pro_profiles')
+      .update({ is_published: nextValue })
+      .eq('id', profile.id)
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error) { console.error('[pro] publish error', res.error); return; }
+        profile.is_published = nextValue;
+        renderPublishState();
+      });
+  });
+
+  // ---- Sauvegarde debouncee ------------------------------------------------
+  function setSaveStatus(state) {
+    var el = document.getElementById('saveStatus');
+    var text = document.getElementById('saveStatusText');
+    el.className = 'save-status ' + state;
+    if (state === 'saving') text.textContent = 'Enregistrement…';
+    else if (state === 'saved') text.textContent = 'Enregistré';
+    else if (state === 'error') text.textContent = "Échec de l'enregistrement";
+    else text.textContent = '—';
+  }
+
+  function scheduleSave() {
+    setSaveStatus('saving');
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(doSave, 1500);
+  }
+
+  function doSave() {
+    sb.from('pro_profiles')
+      .update({
+        description: profile.description,
+        hours: profile.hours,
+        logo_url: profile.logo_url,
+        cover_photo_url: profile.cover_photo_url,
+        gallery_photos: profile.gallery_photos || [],
+        menu_items: profile.menu_items || [],
+        brand_color: profile.brand_color
+      })
+      .eq('id', profile.id)
+      .then(function (res) {
+        setSaveStatus(res.error ? 'error' : 'saved');
+        if (res.error) console.error('[pro] save error', res.error);
+      });
+  }
+
+  // ---- Rendu de l'apercu live ------------------------------------------------
+  function renderPreview() {
+    var coverImg = document.getElementById('p-cover');
+    var coverPlaceholder = document.getElementById('p-cover-placeholder');
+    if (profile.cover_photo_url) {
+      coverImg.src = profile.cover_photo_url;
+      coverImg.style.display = 'block';
+      coverPlaceholder.style.display = 'none';
+      coverImg.onerror = function () {
+        coverImg.style.display = 'none';
+        coverPlaceholder.style.display = 'flex';
+      };
+    } else {
+      coverImg.style.display = 'none';
+      coverPlaceholder.style.display = 'flex';
+    }
+
+    document.getElementById('p-name').textContent = profile.business_name || '—';
+    document.getElementById('p-city').textContent = cityLabel ? cityLabel.toUpperCase() : '—';
+    document.getElementById('p-address').textContent = profile.address || 'Adresse non renseignée';
+
+    var pillEl = document.getElementById('p-category-pill');
+    if (profile.category) {
+      pillEl.textContent = profile.category.toUpperCase();
+      pillEl.style.display = 'inline-block';
+    } else {
+      pillEl.style.display = 'none';
+    }
+
+    var descEl = document.getElementById('p-desc');
+    if (profile.description) {
+      descEl.textContent = profile.description;
+      descEl.style.display = 'block';
+    } else {
+      descEl.style.display = 'none';
+    }
+
+    // Horaires — accordeon, texte affiche tel quel (pre-wrap), pas de logique par jour.
+    var hoursAccordion = document.getElementById('p-hours-accordion');
+    var hoursToggle = document.getElementById('p-hours-toggle');
+    var hoursContent = document.getElementById('p-hours-content');
+    if (profile.hours && profile.hours.trim()) {
+      hoursAccordion.style.display = 'block';
+      document.getElementById('p-hours-text').textContent = profile.hours;
+      hoursToggle.classList.toggle('open', hoursOpen);
+      hoursContent.classList.toggle('open', hoursOpen);
+      hoursToggle.setAttribute('aria-expanded', hoursOpen ? 'true' : 'false');
+    } else {
+      hoursAccordion.style.display = 'none';
+    }
+
+    // Galerie
+    var galleryEl = document.getElementById('p-gallery');
+    var emptyNote = document.getElementById('p-gallery-empty');
+    var photos = (profile.gallery_photos || []).filter(function (u) { return u && u.trim(); });
+    galleryEl.innerHTML = '';
+    if (photos.length) {
+      galleryEl.style.display = 'grid';
+      emptyNote.style.display = 'none';
+      photos.forEach(function (url) {
+        var img = document.createElement('img');
+        img.src = url;
+        img.alt = profile.business_name || 'Photo';
+        img.onerror = function () { img.style.display = 'none'; };
+        galleryEl.appendChild(img);
+      });
+    } else {
+      galleryEl.style.display = 'none';
+      emptyNote.style.display = 'block';
+    }
+
+    // Menu
+    var toggleBtn = document.getElementById('p-menu-toggle');
+    var menuListEl = document.getElementById('p-menu-list');
+    var items = (profile.menu_items || []).filter(function (it) { return it && (it.name || it.description || it.price); });
+    if (items.length) {
+      toggleBtn.style.display = 'block';
+      menuListEl.innerHTML = '';
+      items.forEach(function (item) {
+        var row = document.createElement('div');
+        row.className = 'preview-menu-item';
+
+        var main = document.createElement('div');
+        main.className = 'preview-menu-item-main';
+        var name = document.createElement('div');
+        name.className = 'preview-menu-item-name';
+        name.textContent = item.name || 'Sans nom';
+        main.appendChild(name);
+        if (item.description) {
+          var desc = document.createElement('div');
+          desc.className = 'preview-menu-item-desc';
+          desc.textContent = item.description;
+          main.appendChild(desc);
+        }
+
+        var price = document.createElement('div');
+        price.className = 'preview-menu-item-price';
+        price.textContent = item.price || '';
+
+        row.appendChild(main);
+        row.appendChild(price);
+        menuListEl.appendChild(row);
+      });
+    } else {
+      toggleBtn.style.display = 'none';
+      menuListEl.classList.remove('open');
+    }
+  }
+  document.getElementById('p-menu-toggle').addEventListener('click', function () {
+    var list = document.getElementById('p-menu-list');
+    var open = list.classList.toggle('open');
+    this.textContent = open ? 'Masquer le menu' : 'Voir le menu';
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.getElementById('p-hours-toggle').addEventListener('click', function () {
+    hoursOpen = !hoursOpen;
+    this.classList.toggle('open', hoursOpen);
+    document.getElementById('p-hours-content').classList.toggle('open', hoursOpen);
+    this.setAttribute('aria-expanded', hoursOpen ? 'true' : 'false');
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
