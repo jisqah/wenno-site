@@ -437,12 +437,20 @@
           <label for="loginEmail">Email</label>
           <input type="email" id="loginEmail" required autocomplete="email" placeholder="toi@exemple.com">
         </div>
-        <button type="submit" class="btn-primary" id="loginSubmitBtn">Recevoir mon lien de connexion</button>
+        <button type="submit" class="btn-primary" id="loginSubmitBtn">Recevoir mon code de connexion</button>
         <p class="form-error" id="loginError" style="display:none;"></p>
       </form>
 
       <div id="loginSuccess" style="display:none;">
-        <p class="form-success">Un lien de connexion vient d'être envoyé. Vérifie ta boîte mail (et tes spams) et clique dessus pour continuer.</p>
+        <p class="form-success">Un code de connexion vient d'être envoyé par email. Vérifie ta boîte mail (et tes spams) et saisis-le ci-dessous.</p>
+        <form id="otpForm">
+          <div class="field" style="text-align:left;">
+            <label for="otpCode">Code reçu par email</label>
+            <input type="text" id="otpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456" required>
+          </div>
+          <button type="submit" class="btn-primary" id="otpSubmitBtn">Vérifier le code</button>
+          <p class="form-error" id="otpError" style="display:none;"></p>
+        </form>
       </div>
     </div>
   </div>
@@ -626,6 +634,7 @@
   var cityLabel = '';       // nom de ville resolu
   var saveTimer = null;
   var hoursOpen = false;    // etat ouvert/ferme de l'accordeon Horaires, persiste entre les re-rendus
+  var otpEmail = '';        // email capture a l'envoi du code, reutilise pour verifyOtp
 
   // ---- Ecrans --------------------------------------------------------------
   var screens = ['loading', 'login', 'none', 'picker', 'editor'];
@@ -653,14 +662,36 @@
       options: { emailRedirectTo: window.location.origin + window.location.pathname }
     }).then(function (res) {
       btn.disabled = false;
-      btn.textContent = 'Recevoir mon lien de connexion';
+      btn.textContent = 'Recevoir mon code de connexion';
       if (res.error) {
-        errEl.textContent = "Impossible d'envoyer le lien. Vérifie l'adresse et réessaie.";
+        errEl.textContent = "Impossible d'envoyer le code. Vérifie l'adresse et réessaie.";
         errEl.style.display = 'block';
         return;
       }
+      otpEmail = email;
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('loginSuccess').style.display = 'block';
+    });
+  });
+
+  document.getElementById('otpForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var code = document.getElementById('otpCode').value.trim();
+    var btn = document.getElementById('otpSubmitBtn');
+    var errEl = document.getElementById('otpError');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Vérification…';
+
+    sb.auth.verifyOtp({ email: otpEmail, token: code, type: 'email' }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Vérifier le code';
+      if (res.error) {
+        errEl.textContent = 'Code invalide ou expiré, réessaie ou redemande un code.';
+        errEl.style.display = 'block';
+        return;
+      }
+      // Succes : onAuthStateChange -> SIGNED_IN -> onAuthenticated prend le relais, rien a faire ici.
     });
   });
 
