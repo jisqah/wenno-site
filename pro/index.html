@@ -387,6 +387,16 @@
     padding-bottom: 14px; border-bottom: 1px solid var(--border-dark);
   }
   .preview-menu-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .preview-menu-doc {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border-dark);
+    color: var(--white); text-decoration: none;
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px;
+    transition: opacity 0.2s;
+  }
+  .preview-menu-doc:hover { opacity: 0.7; }
+  .preview-menu-doc:last-child { border-bottom: none; padding-bottom: 0; }
+  .preview-menu-doc svg { flex-shrink: 0; opacity: 0.6; }
   .preview-menu-item-main { flex: 1; }
   .preview-menu-item-name {
     font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; margin-bottom: 4px;
@@ -552,6 +562,12 @@
           <p class="panel-block-title">Menu</p>
           <div id="menuList"></div>
           <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un item</button>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title">Documents du menu</p>
+          <div id="menuDocumentsList"></div>
+          <button type="button" class="btn-add" id="addMenuDocument">+ Ajouter un document</button>
         </div>
 
         <div class="panel-block publish-block">
@@ -790,6 +806,7 @@
 
     renderGalleryList();
     renderMenuList();
+    renderMenuDocumentsList();
     renderPublishState();
   }
 
@@ -915,6 +932,65 @@
     renderMenuList();
   });
 
+  // ---- Documents du menu (liste dynamique, distincte de menu_items) ----------
+  function renderMenuDocumentsList() {
+    var container = document.getElementById('menuDocumentsList');
+    container.innerHTML = '';
+    var docs = profile.menu_documents || [];
+    docs.forEach(function (doc, idx) {
+      var row = document.createElement('div');
+      row.className = 'list-row';
+
+      var titleWrap = document.createElement('div');
+      var titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.placeholder = 'Titre (ex : Carte du soir)';
+      titleInput.value = doc.title || '';
+      titleInput.addEventListener('input', function (e) {
+        profile.menu_documents[idx].title = e.target.value;
+        renderPreview();
+        scheduleSave();
+      });
+      titleWrap.appendChild(titleInput);
+
+      var urlWrap = document.createElement('div');
+      var urlInput = document.createElement('input');
+      urlInput.type = 'url';
+      urlInput.placeholder = 'https://…';
+      urlInput.value = doc.url || '';
+      urlInput.addEventListener('input', function (e) {
+        profile.menu_documents[idx].url = e.target.value;
+        renderPreview();
+        scheduleSave();
+      });
+      urlWrap.appendChild(urlInput);
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-remove';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Supprimer ce document';
+      removeBtn.addEventListener('click', function () {
+        profile.menu_documents.splice(idx, 1);
+        renderMenuDocumentsList();
+        renderPreview();
+        scheduleSave();
+      });
+
+      row.appendChild(titleWrap);
+      row.appendChild(urlWrap);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  }
+  document.getElementById('addMenuDocument').addEventListener('click', function () {
+    if (!profile.menu_documents) profile.menu_documents = [];
+    profile.menu_documents.push({ title: '', url: '' });
+    renderMenuDocumentsList();
+    var inputs = document.querySelectorAll('#menuDocumentsList input');
+    if (inputs.length >= 2) inputs[inputs.length - 2].focus();
+  });
+
   // ---- Publication -------------------------------------------------------
   function renderPublishState() {
     var badge = document.getElementById('publishBadge');
@@ -979,6 +1055,7 @@
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
         menu_items: profile.menu_items || [],
+        menu_documents: profile.menu_documents || [],
         brand_color: profile.brand_color
       })
       .eq('id', profile.id)
@@ -1059,13 +1136,28 @@
       emptyNote.style.display = 'block';
     }
 
-    // Menu
+    // Menu (documents + items)
     var toggleBtn = document.getElementById('p-menu-toggle');
     var menuListEl = document.getElementById('p-menu-list');
+    var docs = (profile.menu_documents || []).filter(function (d) { return d && (d.title || d.url); });
     var items = (profile.menu_items || []).filter(function (it) { return it && (it.name || it.description || it.price); });
-    if (items.length) {
+    if (docs.length || items.length) {
       toggleBtn.style.display = 'block';
       menuListEl.innerHTML = '';
+      docs.forEach(function (doc) {
+        var link = document.createElement('a');
+        link.className = 'preview-menu-doc';
+        link.href = doc.url || '#';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+
+        var titleSpan = document.createElement('span');
+        titleSpan.textContent = doc.title || doc.url || 'Document';
+        link.appendChild(titleSpan);
+        link.insertAdjacentHTML('beforeend', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>');
+
+        menuListEl.appendChild(link);
+      });
       items.forEach(function (item) {
         var row = document.createElement('div');
         row.className = 'preview-menu-item';
