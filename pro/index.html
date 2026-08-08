@@ -57,10 +57,6 @@
 
   main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-  /* SCREENS — toggled via .visible */
-  .screen { display: none; }
-  .screen.visible { display: block; }
-
   /* CENTERED narrow screens (loading / login / none / picker) */
   .center-screen {
     min-height: calc(100vh - 73px);
@@ -423,14 +419,14 @@
 <main>
 
   <!-- LOADING -->
-  <div class="screen visible center-screen" id="screen-loading">
+  <div class="center-screen" id="screen-loading">
     <div class="center-box">
       <p class="form-success">Chargement…</p>
     </div>
   </div>
 
   <!-- LOGIN -->
-  <div class="screen center-screen" id="screen-login">
+  <div class="center-screen" id="screen-login">
     <div class="center-box">
       <p class="center-eyebrow">Espace partenaire</p>
       <h1 class="center-title">Gérer ma fiche wenno</h1>
@@ -452,7 +448,7 @@
   </div>
 
   <!-- NO PROFILE -->
-  <div class="screen center-screen" id="screen-none">
+  <div class="center-screen" id="screen-none">
     <div class="center-box">
       <p class="center-eyebrow">Espace partenaire</p>
       <h1 class="center-title">Aucune fiche associée</h1>
@@ -462,7 +458,7 @@
   </div>
 
   <!-- PICKER (plusieurs fiches) -->
-  <div class="screen center-screen" id="screen-picker">
+  <div class="center-screen" id="screen-picker">
     <div class="center-box" style="max-width: 520px;">
       <p class="center-eyebrow">Espace partenaire</p>
       <h1 class="center-title">Choisis une fiche</h1>
@@ -471,7 +467,7 @@
   </div>
 
   <!-- EDITOR -->
-  <div class="screen" id="screen-editor">
+  <div id="screen-editor">
     <div class="editor-header">
       <span class="editor-header-title" id="editorHeaderTitle"></span>
       <span class="save-status" id="saveStatus"><span class="dot"></span><span id="saveStatusText">—</span></span>
@@ -635,10 +631,12 @@
   var screens = ['loading', 'login', 'none', 'picker', 'editor'];
   function showScreen(name) {
     screens.forEach(function (s) {
-      document.getElementById('screen-' + s).classList.toggle('visible', s === name);
+      var el = document.getElementById('screen-' + s);
+      el.style.display = (s === name) ? '' : 'none';
     });
     document.getElementById('signOutBtn').style.display = (name === 'none' || name === 'picker' || name === 'editor') ? 'inline-block' : 'none';
   }
+  showScreen('loading'); // etat initial pose de facon synchrone, avant meme getSession() (async) — evite tout flash des ecrans
 
   // ---- Auth ----------------------------------------------------------------
   document.getElementById('loginForm').addEventListener('submit', function (e) {
