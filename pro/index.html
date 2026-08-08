@@ -243,13 +243,6 @@
   }
   .btn-add:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
 
-  .color-row { display: flex; align-items: center; gap: 12px; }
-  .color-row input[type="color"] {
-    width: 46px; height: 42px; padding: 2px;
-    background: rgba(255,255,255,0.04); border: 1px solid var(--border-dark);
-    border-radius: 10px; cursor: pointer;
-  }
-
   .publish-block { padding: 24px 28px; }
   .publish-status-row {
     display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
@@ -534,18 +527,10 @@
             <textarea id="f-hours" placeholder="Mar – Sam, 18h – 02h&#10;Fermé dim &amp; lun" style="min-height: 70px;"></textarea>
             <p class="field-hint">Texte libre, plusieurs lignes possibles.</p>
           </div>
-          <div class="field">
+          <div class="field" style="margin-bottom:0;">
             <label for="f-reservation_url">Lien de réservation (optionnel)</label>
             <input type="url" id="f-reservation_url" placeholder="https://…">
             <p class="field-hint">Lien TheFork, OpenTable, ton site, ou autre.</p>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label for="f-brand_color">Couleur de marque (optionnel)</label>
-            <div class="color-row">
-              <input type="color" id="f-brand_color" value="#0a0a0a">
-              <span class="field-hint" id="brandColorValue" style="margin-top:0;">Aucune</span>
-              <button type="button" class="btn-remove" id="clearBrandColor" title="Retirer la couleur" style="margin-left:auto;">×</button>
-            </div>
           </div>
         </div>
 
@@ -805,10 +790,6 @@
     document.getElementById('f-reservation_url').value = profile.reservation_url || '';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
 
-    var color = profile.brand_color || '#0a0a0a';
-    document.getElementById('f-brand_color').value = color;
-    document.getElementById('brandColorValue').textContent = profile.brand_color || 'Aucune';
-
     renderGalleryList();
     renderMenuDocumentsList();
     renderPublishState();
@@ -821,18 +802,6 @@
       renderPreview();
       scheduleSave();
     });
-  });
-
-  document.getElementById('f-brand_color').addEventListener('input', function (e) {
-    profile.brand_color = e.target.value;
-    document.getElementById('brandColorValue').textContent = e.target.value;
-    scheduleSave();
-  });
-  document.getElementById('clearBrandColor').addEventListener('click', function () {
-    profile.brand_color = null;
-    document.getElementById('f-brand_color').value = '#0a0a0a';
-    document.getElementById('brandColorValue').textContent = 'Aucune';
-    scheduleSave();
   });
 
   // ---- Galerie photo (liste dynamique) ---------------------------------------
@@ -1003,8 +972,7 @@
         reservation_url: profile.reservation_url,
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
-        menu_documents: profile.menu_documents || [],
-        brand_color: profile.brand_color
+        menu_documents: profile.menu_documents || []
       })
       .eq('id', profile.id)
       .then(function (res) {
