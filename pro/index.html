@@ -298,15 +298,6 @@
     font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.7);
     margin-bottom: 16px;
   }
-  .preview-category-pill {
-    display: inline-block;
-    padding: 6px 14px; margin-bottom: 24px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 40px;
-    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
-    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-    color: rgba(255,255,255,0.8);
-  }
   .preview-desc {
     font-family: 'Jost', sans-serif; font-weight: 300;
     font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.85);
@@ -508,10 +499,6 @@
               <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Téléphone</label>
               <div class="field-readonly-value" id="ro-phone">—</div>
             </div>
-            <div>
-              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Catégorie</label>
-              <div class="field-readonly-value" id="ro-category">—</div>
-            </div>
           </div>
           <p class="field-hint">Une erreur sur ces informations ? Écris à contact@wenno.app.</p>
         </div>
@@ -589,8 +576,6 @@
                 <span id="p-hours-text"></span>
               </div>
             </div>
-
-            <span class="preview-category-pill" id="p-category-pill" style="display:none;">—</span>
 
             <p class="preview-desc" id="p-desc" style="display:none;"></p>
 
@@ -783,7 +768,6 @@
     document.getElementById('ro-business_name').textContent = profile.business_name || '—';
     document.getElementById('ro-address').textContent = profile.address || '—';
     document.getElementById('ro-phone').textContent = profile.phone || '—';
-    document.getElementById('ro-category').textContent = profile.category || '—';
 
     document.getElementById('f-description').value = profile.description || '';
     document.getElementById('f-hours').value = profile.hours || '';
@@ -1001,14 +985,6 @@
     document.getElementById('p-name').textContent = profile.business_name || '—';
     document.getElementById('p-city').textContent = cityLabel ? cityLabel.toUpperCase() : '—';
     document.getElementById('p-address').textContent = profile.address || 'Adresse non renseignée';
-
-    var pillEl = document.getElementById('p-category-pill');
-    if (profile.category) {
-      pillEl.textContent = profile.category.toUpperCase();
-      pillEl.style.display = 'inline-block';
-    } else {
-      pillEl.style.display = 'none';
-    }
 
     var descEl = document.getElementById('p-desc');
     if (profile.description) {
