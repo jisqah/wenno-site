@@ -321,8 +321,7 @@
     white-space: pre-wrap;
   }
   .preview-hours-accordion {
-    border: 1px solid var(--border-dark); border-radius: 16px;
-    margin-bottom: 34px; overflow: hidden;
+    margin-bottom: 34px;
   }
   .preview-hours-toggle {
     width: 100%; display: flex; align-items: center; justify-content: space-between;
@@ -565,10 +564,6 @@
 
             <p class="preview-address" id="p-address">—</p>
 
-            <span class="preview-category-pill" id="p-category-pill" style="display:none;">—</span>
-
-            <p class="preview-desc" id="p-desc" style="display:none;"></p>
-
             <div class="preview-hours-accordion" id="p-hours-accordion" style="display:none;">
               <button type="button" class="preview-hours-toggle" id="p-hours-toggle" aria-expanded="false">
                 <span>Horaires</span>
@@ -578,6 +573,10 @@
                 <span id="p-hours-text"></span>
               </div>
             </div>
+
+            <span class="preview-category-pill" id="p-category-pill" style="display:none;">—</span>
+
+            <p class="preview-desc" id="p-desc" style="display:none;"></p>
 
             <button type="button" class="preview-menu-toggle" id="p-menu-toggle" style="display:none;">Voir le menu</button>
             <div class="preview-menu-list" id="p-menu-list"></div>
