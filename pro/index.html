@@ -243,14 +243,6 @@
   }
   .btn-add:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
 
-  .menu-item-row {
-    padding: 14px; margin-bottom: 12px;
-    background: rgba(255,255,255,0.02); border: 1px solid var(--border-dark);
-    border-radius: 12px;
-  }
-  .menu-item-row .field { margin-bottom: 10px; }
-  .menu-item-row .field:last-of-type { margin-bottom: 0; }
-
   .color-row { display: flex; align-items: center; gap: 12px; }
   .color-row input[type="color"] {
     width: 46px; height: 42px; padding: 2px;
@@ -382,11 +374,6 @@
     margin-top: 18px; display: none; flex-direction: column; gap: 16px;
   }
   .preview-menu-list.open { display: flex; }
-  .preview-menu-item {
-    display: flex; justify-content: space-between; gap: 16px;
-    padding-bottom: 14px; border-bottom: 1px solid var(--border-dark);
-  }
-  .preview-menu-item:last-child { border-bottom: none; padding-bottom: 0; }
   .preview-menu-doc {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     padding-bottom: 14px; border-bottom: 1px solid var(--border-dark);
@@ -397,18 +384,6 @@
   .preview-menu-doc:hover { opacity: 0.7; }
   .preview-menu-doc:last-child { border-bottom: none; padding-bottom: 0; }
   .preview-menu-doc svg { flex-shrink: 0; opacity: 0.6; }
-  .preview-menu-item-main { flex: 1; }
-  .preview-menu-item-name {
-    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; margin-bottom: 4px;
-  }
-  .preview-menu-item-desc {
-    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12.5px;
-    color: var(--text-dim); line-height: 1.5;
-  }
-  .preview-menu-item-price {
-    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px;
-    color: var(--white); white-space: nowrap;
-  }
 
   @media (max-width: 900px) {
     nav { padding: 18px 20px; }
@@ -561,13 +536,7 @@
         <div class="panel-block">
           <p class="panel-block-title">Menu</p>
           <div id="menuList"></div>
-          <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un item</button>
-        </div>
-
-        <div class="panel-block">
-          <p class="panel-block-title">Documents du menu</p>
-          <div id="menuDocumentsList"></div>
-          <button type="button" class="btn-add" id="addMenuDocument">+ Ajouter un document</button>
+          <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
         </div>
 
         <div class="panel-block publish-block">
@@ -805,7 +774,6 @@
     document.getElementById('brandColorValue').textContent = profile.brand_color || 'Aucune';
 
     renderGalleryList();
-    renderMenuList();
     renderMenuDocumentsList();
     renderPublishState();
   }
@@ -877,64 +845,9 @@
     if (inputs.length) inputs[inputs.length - 1].focus();
   });
 
-  // ---- Menu (liste dynamique d'objets) ---------------------------------------
-  function renderMenuList() {
-    var container = document.getElementById('menuList');
-    container.innerHTML = '';
-    var items = profile.menu_items || [];
-    items.forEach(function (item, idx) {
-      var row = document.createElement('div');
-      row.className = 'menu-item-row';
-
-      row.appendChild(buildMenuField('Nom', item.name, function (v) {
-        profile.menu_items[idx].name = v; renderPreview(); scheduleSave();
-      }));
-      row.appendChild(buildMenuField('Description', item.description, function (v) {
-        profile.menu_items[idx].description = v; renderPreview(); scheduleSave();
-      }));
-      row.appendChild(buildMenuField('Prix', item.price, function (v) {
-        profile.menu_items[idx].price = v; renderPreview(); scheduleSave();
-      }));
-
-      var removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'btn-remove';
-      removeBtn.textContent = '×';
-      removeBtn.title = 'Supprimer cet item';
-      removeBtn.style.marginTop = '4px';
-      removeBtn.addEventListener('click', function () {
-        profile.menu_items.splice(idx, 1);
-        renderMenuList();
-        renderPreview();
-        scheduleSave();
-      });
-      row.appendChild(removeBtn);
-
-      container.appendChild(row);
-    });
-  }
-  function buildMenuField(labelText, value, onInput) {
-    var field = document.createElement('div');
-    field.className = 'field';
-    var label = document.createElement('label');
-    label.textContent = labelText;
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.value = value || '';
-    input.addEventListener('input', function (e) { onInput(e.target.value); });
-    field.appendChild(label);
-    field.appendChild(input);
-    return field;
-  }
-  document.getElementById('addMenuItem').addEventListener('click', function () {
-    if (!profile.menu_items) profile.menu_items = [];
-    profile.menu_items.push({ name: '', description: '', price: '' });
-    renderMenuList();
-  });
-
-  // ---- Documents du menu (liste dynamique, distincte de menu_items) ----------
+  // ---- Menu = documents (titre + url), liste dynamique -----------------------
   function renderMenuDocumentsList() {
-    var container = document.getElementById('menuDocumentsList');
+    var container = document.getElementById('menuList');
     container.innerHTML = '';
     var docs = profile.menu_documents || [];
     docs.forEach(function (doc, idx) {
@@ -983,11 +896,11 @@
       container.appendChild(row);
     });
   }
-  document.getElementById('addMenuDocument').addEventListener('click', function () {
+  document.getElementById('addMenuItem').addEventListener('click', function () {
     if (!profile.menu_documents) profile.menu_documents = [];
     profile.menu_documents.push({ title: '', url: '' });
     renderMenuDocumentsList();
-    var inputs = document.querySelectorAll('#menuDocumentsList input');
+    var inputs = document.querySelectorAll('#menuList input');
     if (inputs.length >= 2) inputs[inputs.length - 2].focus();
   });
 
@@ -1054,7 +967,6 @@
         logo_url: profile.logo_url,
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
-        menu_items: profile.menu_items || [],
         menu_documents: profile.menu_documents || [],
         brand_color: profile.brand_color
       })
@@ -1136,12 +1048,11 @@
       emptyNote.style.display = 'block';
     }
 
-    // Menu (documents + items)
+    // Menu (menu_documents uniquement)
     var toggleBtn = document.getElementById('p-menu-toggle');
     var menuListEl = document.getElementById('p-menu-list');
     var docs = (profile.menu_documents || []).filter(function (d) { return d && (d.title || d.url); });
-    var items = (profile.menu_items || []).filter(function (it) { return it && (it.name || it.description || it.price); });
-    if (docs.length || items.length) {
+    if (docs.length) {
       toggleBtn.style.display = 'block';
       menuListEl.innerHTML = '';
       docs.forEach(function (doc) {
@@ -1157,31 +1068,6 @@
         link.insertAdjacentHTML('beforeend', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>');
 
         menuListEl.appendChild(link);
-      });
-      items.forEach(function (item) {
-        var row = document.createElement('div');
-        row.className = 'preview-menu-item';
-
-        var main = document.createElement('div');
-        main.className = 'preview-menu-item-main';
-        var name = document.createElement('div');
-        name.className = 'preview-menu-item-name';
-        name.textContent = item.name || 'Sans nom';
-        main.appendChild(name);
-        if (item.description) {
-          var desc = document.createElement('div');
-          desc.className = 'preview-menu-item-desc';
-          desc.textContent = item.description;
-          main.appendChild(desc);
-        }
-
-        var price = document.createElement('div');
-        price.className = 'preview-menu-item-price';
-        price.textContent = item.price || '';
-
-        row.appendChild(main);
-        row.appendChild(price);
-        menuListEl.appendChild(row);
       });
     } else {
       toggleBtn.style.display = 'none';
