@@ -360,6 +360,19 @@
     font-size: 12px; color: var(--text-dimmer); font-style: italic;
   }
 
+  .preview-maps-btn {
+    display: block;
+    width: 100%; padding: 14px 22px;
+    background: transparent; color: var(--white);
+    border: 1px solid var(--border-dark); border-radius: 60px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    text-align: center; text-decoration: none;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    margin-top: 28px;
+  }
+  .preview-maps-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
+
   .preview-menu-toggle {
     width: 100%; padding: 14px 22px;
     background: transparent; color: var(--white);
@@ -584,6 +597,8 @@
             <p class="preview-section-label">Photos</p>
             <div class="preview-gallery" id="p-gallery"></div>
             <p class="preview-empty-note" id="p-gallery-empty">Aucune photo ajoutée pour l'instant.</p>
+
+            <a href="#" target="_blank" rel="noopener noreferrer" class="preview-maps-btn" id="p-maps-btn" style="display:none;">Ouvrir dans Maps</a>
 
           </div>
         </div>
@@ -1071,6 +1086,18 @@
     } else {
       toggleBtn.style.display = 'none';
       menuListEl.classList.remove('open');
+    }
+
+    // Ouvrir dans Maps
+    var mapsBtn = document.getElementById('p-maps-btn');
+    if (profile.lat && profile.lng) {
+      mapsBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(profile.lat + ',' + profile.lng);
+      mapsBtn.style.display = 'block';
+    } else if (profile.address) {
+      mapsBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(profile.address);
+      mapsBtn.style.display = 'block';
+    } else {
+      mapsBtn.style.display = 'none';
     }
   }
   document.getElementById('p-menu-toggle').addEventListener('click', function () {
