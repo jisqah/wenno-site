@@ -360,6 +360,23 @@
     font-size: 12px; color: var(--text-dimmer); font-style: italic;
   }
 
+  .preview-reserve-wrap {
+    text-align: center;
+    margin-top: 28px;
+  }
+  .preview-reserve-btn {
+    display: inline-block;
+    padding: 15px 48px;
+    background: var(--white); color: var(--black);
+    border: none; border-radius: 60px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 400;
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+  }
+  .preview-reserve-btn:hover { opacity: 0.85; }
+  .preview-reserve-btn:active { transform: translateY(1px); }
+
   .preview-maps-btn {
     display: block;
     width: 100%; padding: 14px 22px;
@@ -517,6 +534,11 @@
             <textarea id="f-hours" placeholder="Mar – Sam, 18h – 02h&#10;Fermé dim &amp; lun" style="min-height: 70px;"></textarea>
             <p class="field-hint">Texte libre, plusieurs lignes possibles.</p>
           </div>
+          <div class="field">
+            <label for="f-reservation_url">Lien de réservation (optionnel)</label>
+            <input type="url" id="f-reservation_url" placeholder="https://…">
+            <p class="field-hint">Lien TheFork, OpenTable, ton site, ou autre.</p>
+          </div>
           <div class="field" style="margin-bottom:0;">
             <label for="f-brand_color">Couleur de marque (optionnel)</label>
             <div class="color-row">
@@ -597,6 +619,10 @@
             <p class="preview-section-label">Photos</p>
             <div class="preview-gallery" id="p-gallery"></div>
             <p class="preview-empty-note" id="p-gallery-empty">Aucune photo ajoutée pour l'instant.</p>
+
+            <div class="preview-reserve-wrap" id="p-reserve-wrap" style="display:none;">
+              <a href="#" target="_blank" rel="noopener noreferrer" class="preview-reserve-btn" id="p-reserve-btn">Réserver</a>
+            </div>
 
             <a href="#" target="_blank" rel="noopener noreferrer" class="preview-maps-btn" id="p-maps-btn" style="display:none;">Ouvrir dans Maps</a>
 
@@ -780,6 +806,7 @@
 
     document.getElementById('f-description').value = profile.description || '';
     document.getElementById('f-hours').value = profile.hours || '';
+    document.getElementById('f-reservation_url').value = profile.reservation_url || '';
     document.getElementById('f-logo_url').value = profile.logo_url || '';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
 
@@ -793,7 +820,7 @@
   }
 
   // ---- Champs simples : ecoute + autosave ------------------------------------
-  ['description', 'hours', 'logo_url', 'cover_photo_url'].forEach(function (key) {
+  ['description', 'hours', 'reservation_url', 'logo_url', 'cover_photo_url'].forEach(function (key) {
     document.getElementById('f-' + key).addEventListener('input', function (e) {
       profile[key] = e.target.value;
       renderPreview();
@@ -978,6 +1005,7 @@
       .update({
         description: profile.description,
         hours: profile.hours,
+        reservation_url: profile.reservation_url,
         logo_url: profile.logo_url,
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
@@ -1086,6 +1114,16 @@
     } else {
       toggleBtn.style.display = 'none';
       menuListEl.classList.remove('open');
+    }
+
+    // Reserver
+    var reserveWrap = document.getElementById('p-reserve-wrap');
+    var reserveBtn = document.getElementById('p-reserve-btn');
+    if (profile.reservation_url) {
+      reserveBtn.href = profile.reservation_url;
+      reserveWrap.style.display = 'block';
+    } else {
+      reserveWrap.style.display = 'none';
     }
 
     // Ouvrir dans Maps
