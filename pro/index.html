@@ -298,6 +298,13 @@
     font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.7);
     margin-bottom: 16px;
   }
+  .preview-phone-row {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 13px; color: rgba(255,255,255,0.7);
+    margin-bottom: 16px;
+  }
+  .preview-phone-row svg { flex-shrink: 0; opacity: 0.7; }
   .preview-desc {
     font-family: 'Jost', sans-serif; font-weight: 300;
     font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.85);
@@ -566,6 +573,11 @@
             </div>
 
             <p class="preview-address" id="p-address">—</p>
+
+            <div class="preview-phone-row" id="p-phone-row" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L14 13l5 2v4a2 2 0 0 1-2 2C9.5 21 3 14.5 3 6a2 2 0 0 1 1-2z"/></svg>
+              <span id="p-phone">—</span>
+            </div>
 
             <div class="preview-hours-accordion" id="p-hours-accordion" style="display:none;">
               <button type="button" class="preview-hours-toggle" id="p-hours-toggle" aria-expanded="false">
@@ -985,6 +997,14 @@
     document.getElementById('p-name').textContent = profile.business_name || '—';
     document.getElementById('p-city').textContent = cityLabel ? cityLabel.toUpperCase() : '—';
     document.getElementById('p-address').textContent = profile.address || 'Adresse non renseignée';
+
+    var phoneRow = document.getElementById('p-phone-row');
+    if (profile.phone) {
+      document.getElementById('p-phone').textContent = profile.phone;
+      phoneRow.style.display = 'flex';
+    } else {
+      phoneRow.style.display = 'none';
+    }
 
     var descEl = document.getElementById('p-desc');
     if (profile.description) {
