@@ -551,10 +551,6 @@
 
         <div class="panel-block">
           <p class="panel-block-title">Photos</p>
-          <div class="field">
-            <label for="f-logo_url">Logo (URL)</label>
-            <input type="url" id="f-logo_url" placeholder="https://…">
-          </div>
           <div class="field" style="margin-bottom:0;">
             <label for="f-cover_photo_url">Photo de couverture (URL)</label>
             <input type="url" id="f-cover_photo_url" placeholder="https://…">
@@ -807,7 +803,6 @@
     document.getElementById('f-description').value = profile.description || '';
     document.getElementById('f-hours').value = profile.hours || '';
     document.getElementById('f-reservation_url').value = profile.reservation_url || '';
-    document.getElementById('f-logo_url').value = profile.logo_url || '';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
 
     var color = profile.brand_color || '#0a0a0a';
@@ -820,7 +815,7 @@
   }
 
   // ---- Champs simples : ecoute + autosave ------------------------------------
-  ['description', 'hours', 'reservation_url', 'logo_url', 'cover_photo_url'].forEach(function (key) {
+  ['description', 'hours', 'reservation_url', 'cover_photo_url'].forEach(function (key) {
     document.getElementById('f-' + key).addEventListener('input', function (e) {
       profile[key] = e.target.value;
       renderPreview();
@@ -1006,7 +1001,6 @@
         description: profile.description,
         hours: profile.hours,
         reservation_url: profile.reservation_url,
-        logo_url: profile.logo_url,
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
         menu_documents: profile.menu_documents || [],
