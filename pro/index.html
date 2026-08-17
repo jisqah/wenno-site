@@ -243,6 +243,40 @@
   }
   .btn-add:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
 
+  /* CARNET (recherche + liste des recommandations) */
+  .carnet-result-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-dark); border-radius: 10px;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .carnet-result-item:hover { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.06); }
+  .carnet-result-name {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; color: var(--white);
+  }
+  .carnet-result-address {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px; color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .carnet-result-add { flex-shrink: 0; font-size: 20px; color: var(--text-dim); line-height: 1; }
+
+  .carnet-saved-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .carnet-saved-item:last-child { border-bottom: none; }
+  .carnet-saved-name {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; color: var(--white);
+  }
+  .carnet-saved-address {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px; color: var(--text-dim);
+    margin-top: 2px;
+  }
+
   .publish-block { padding: 24px 28px; }
   .publish-status-row {
     display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
@@ -521,10 +555,14 @@
             <textarea id="f-hours" placeholder="Mar – Sam, 18h – 02h, fermé dim &amp; lun" style="min-height: 70px;"></textarea>
             <p class="field-hint">Texte libre, plusieurs lignes possibles.</p>
           </div>
-          <div class="field" style="margin-bottom:0;">
+          <div class="field">
             <label for="f-reservation_url">Lien de réservation (optionnel)</label>
             <input type="url" id="f-reservation_url" placeholder="https://…">
             <p class="field-hint">Lien TheFork, OpenTable, ton site, ou autre.</p>
+          </div>
+          <div class="field" id="field-reservation_label" style="margin-bottom:0; display:none;">
+            <label for="f-reservation_label">Précision (optionnel)</label>
+            <input type="text" id="f-reservation_label" placeholder="ex: Réserver une chambre, Réserver une table...">
           </div>
         </div>
 
@@ -546,6 +584,24 @@
           <p class="panel-block-title">Menu</p>
           <div id="menuList"></div>
           <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title" id="carnetTitle">Carnet</p>
+
+          <div class="field">
+            <label for="carnetSearchInput">Rechercher un lieu à recommander</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="carnetSearchInput" placeholder="Nom du lieu, adresse…" style="flex:1;">
+              <button type="button" class="btn-outline" id="carnetSearchBtn" style="flex-shrink:0;">Rechercher</button>
+            </div>
+            <p class="field-hint" id="carnetSearchStatus" style="display:none;"></p>
+          </div>
+
+          <div id="carnetResultsList"></div>
+
+          <div id="carnetSavedList" style="margin-top:24px;"></div>
+          <p class="field-hint" id="carnetEmptyNote">Aucune recommandation ajoutée pour l'instant.</p>
         </div>
 
         <div class="panel-block publish-block">
@@ -638,6 +694,7 @@
   var saveTimer = null;
   var hoursOpen = false;    // etat ouvert/ferme de l'accordeon Horaires, persiste entre les re-rendus
   var otpEmail = '';        // email capture a l'envoi du code, reutilise pour verifyOtp
+  var recommendations = []; // lignes pro_recommendations de la fiche courante
 
   // ---- Ecrans --------------------------------------------------------------
   var screens = ['loading', 'login', 'none', 'picker', 'editor'];
@@ -784,20 +841,32 @@
     document.getElementById('f-description').value = profile.description || '';
     document.getElementById('f-hours').value = profile.hours || '';
     document.getElementById('f-reservation_url').value = profile.reservation_url || '';
+    document.getElementById('f-reservation_label').value = profile.reservation_label || '';
+    document.getElementById('field-reservation_label').style.display = profile.reservation_url ? '' : 'none';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
+
+    document.getElementById('carnetTitle').textContent = 'Carnet du ' + (profile.business_name || 'établissement');
 
     renderGalleryList();
     renderMenuDocumentsList();
     renderPublishState();
+    loadRecommendations();
   }
 
   // ---- Champs simples : ecoute + autosave ------------------------------------
-  ['description', 'hours', 'reservation_url', 'cover_photo_url'].forEach(function (key) {
+  ['description', 'hours', 'reservation_url', 'reservation_label', 'cover_photo_url'].forEach(function (key) {
     document.getElementById('f-' + key).addEventListener('input', function (e) {
       profile[key] = e.target.value;
       renderPreview();
       scheduleSave();
     });
+  });
+
+  // reservation_label n'a de sens que si reservation_url est renseigne —
+  // affiche/masque le champ en fonction, sans toucher a l'ecoute autosave
+  // generique ci-dessus (qui gere deja la saisie du champ lui-meme).
+  document.getElementById('f-reservation_url').addEventListener('input', function () {
+    document.getElementById('field-reservation_label').style.display = this.value.trim() ? '' : 'none';
   });
 
   // ---- Galerie photo (liste dynamique) ---------------------------------------
@@ -943,6 +1012,191 @@
       });
   });
 
+  // ---- Carnet de recommandations ----------------------------------------------
+  // Recherche via l'Edge Function search-places (proxy Google Places — la cle
+  // API n'apparait jamais cote client). L'ajout/la liste/la suppression passent
+  // directement par sb.from('pro_recommendations'), proteges par les RLS deja
+  // en place (editeur de la fiche uniquement).
+
+  function loadRecommendations() {
+    sb.from('pro_recommendations')
+      .select('id, name, address, photo_url, created_at')
+      .eq('pro_profile_id', profile.id)
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        if (res.error) {
+          console.error('[pro] load recommendations error', res.error);
+          return;
+        }
+        recommendations = res.data || [];
+        renderCarnetSaved();
+      });
+  }
+
+  function renderCarnetSaved() {
+    var container = document.getElementById('carnetSavedList');
+    var emptyNote = document.getElementById('carnetEmptyNote');
+    container.innerHTML = '';
+
+    if (!recommendations.length) {
+      emptyNote.style.display = 'block';
+      return;
+    }
+    emptyNote.style.display = 'none';
+
+    recommendations.forEach(function (rec) {
+      var row = document.createElement('div');
+      row.className = 'carnet-saved-item';
+
+      var textWrap = document.createElement('div');
+      var nameEl = document.createElement('div');
+      nameEl.className = 'carnet-saved-name';
+      nameEl.textContent = rec.name || 'Sans nom';
+      textWrap.appendChild(nameEl);
+      if (rec.address) {
+        var addrEl = document.createElement('div');
+        addrEl.className = 'carnet-saved-address';
+        addrEl.textContent = rec.address;
+        textWrap.appendChild(addrEl);
+      }
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-remove';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Retirer cette recommandation';
+      removeBtn.addEventListener('click', function () { removeRecommendation(rec.id); });
+
+      row.appendChild(textWrap);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  }
+
+  function removeRecommendation(id) {
+    if (!window.confirm('Retirer cette recommandation du carnet ?')) return;
+    sb.from('pro_recommendations')
+      .delete()
+      .eq('id', id)
+      .then(function (res) {
+        if (res.error) {
+          console.error('[pro] remove recommendation error', res.error);
+          return;
+        }
+        recommendations = recommendations.filter(function (r) { return r.id !== id; });
+        renderCarnetSaved();
+      });
+  }
+
+  function doCarnetSearch() {
+    var query = document.getElementById('carnetSearchInput').value.trim();
+    var statusEl = document.getElementById('carnetSearchStatus');
+    var resultsEl = document.getElementById('carnetResultsList');
+    resultsEl.innerHTML = '';
+    if (!query) return;
+
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Recherche…';
+
+    sb.functions.invoke('search-places', { body: { action: 'search', query: query } })
+      .then(function (res) {
+        if (res.error) {
+          statusEl.textContent = 'Recherche indisponible, réessaie.';
+          return;
+        }
+        var results = (res.data && res.data.results) || [];
+        if (!results.length) {
+          statusEl.textContent = 'Aucun résultat.';
+          return;
+        }
+        statusEl.style.display = 'none';
+        renderCarnetResults(results);
+      })
+      .catch(function () {
+        statusEl.textContent = 'Recherche indisponible, réessaie.';
+      });
+  }
+  document.getElementById('carnetSearchBtn').addEventListener('click', doCarnetSearch);
+  document.getElementById('carnetSearchInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); doCarnetSearch(); }
+  });
+
+  function renderCarnetResults(results) {
+    var container = document.getElementById('carnetResultsList');
+    container.innerHTML = '';
+    results.forEach(function (r) {
+      var item = document.createElement('div');
+      item.className = 'carnet-result-item';
+
+      var textWrap = document.createElement('div');
+      var nameEl = document.createElement('div');
+      nameEl.className = 'carnet-result-name';
+      nameEl.textContent = r.name || 'Sans nom';
+      textWrap.appendChild(nameEl);
+      if (r.address) {
+        var addrEl = document.createElement('div');
+        addrEl.className = 'carnet-result-address';
+        addrEl.textContent = r.address;
+        textWrap.appendChild(addrEl);
+      }
+
+      var addIcon = document.createElement('span');
+      addIcon.className = 'carnet-result-add';
+      addIcon.textContent = '+';
+
+      item.appendChild(textWrap);
+      item.appendChild(addIcon);
+      item.addEventListener('click', function () { addRecommendation(r, item); });
+      container.appendChild(item);
+    });
+  }
+
+  function addRecommendation(result, itemEl) {
+    itemEl.style.opacity = '0.5';
+    itemEl.style.pointerEvents = 'none';
+
+    function insertRow(photoUrl) {
+      sb.from('pro_recommendations')
+        .insert({
+          pro_profile_id: profile.id,
+          google_place_id: result.googlePlaceId || null,
+          name: result.name,
+          address: result.address,
+          lat: result.lat,
+          lng: result.lng,
+          photo_url: photoUrl || null
+        })
+        .select()
+        .single()
+        .then(function (res) {
+          if (res.error) {
+            console.error('[pro] add recommendation error', res.error);
+            var statusEl = document.getElementById('carnetSearchStatus');
+            statusEl.style.display = 'block';
+            statusEl.textContent = "Impossible d'ajouter ce lieu.";
+            itemEl.style.opacity = '';
+            itemEl.style.pointerEvents = '';
+            return;
+          }
+          recommendations.unshift(res.data);
+          renderCarnetSaved();
+          document.getElementById('carnetResultsList').innerHTML = '';
+          document.getElementById('carnetSearchInput').value = '';
+        });
+    }
+
+    if (result.photoRef) {
+      sb.functions.invoke('search-places', { body: { action: 'photo', photoRef: result.photoRef } })
+        .then(function (res) {
+          var photoUrl = (res.data && res.data.photoUrl) || null;
+          insertRow(photoUrl);
+        })
+        .catch(function () { insertRow(null); });
+    } else {
+      insertRow(null);
+    }
+  }
+
   // ---- Sauvegarde debouncee ------------------------------------------------
   function setSaveStatus(state) {
     var el = document.getElementById('saveStatus');
@@ -966,6 +1220,10 @@
         description: profile.description,
         hours: profile.hours,
         reservation_url: profile.reservation_url,
+        // Pas de libelle sans lien : si reservation_url est vide, on n'enregistre
+        // jamais reservation_label, meme si le champ (alors masque) contient
+        // encore une ancienne valeur saisie precedemment.
+        reservation_label: profile.reservation_url ? (profile.reservation_label || null) : null,
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
         menu_documents: profile.menu_documents || []
@@ -1079,6 +1337,7 @@
     var reserveBtn = document.getElementById('p-reserve-btn');
     if (profile.reservation_url) {
       reserveBtn.href = profile.reservation_url;
+      reserveBtn.textContent = profile.reservation_label || 'Réserver';
       reserveWrap.style.display = 'block';
     } else {
       reserveWrap.style.display = 'none';
