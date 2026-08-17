@@ -845,7 +845,7 @@
     document.getElementById('field-reservation_label').style.display = profile.reservation_url ? '' : 'none';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
 
-    document.getElementById('carnetTitle').textContent = 'Carnet du ' + (profile.business_name || 'établissement');
+    document.getElementById('carnetTitle').textContent = (profile.business_name || 'établissement') + " - Notre carnet d'adresses";
 
     renderGalleryList();
     renderMenuDocumentsList();
