@@ -221,6 +221,24 @@
     font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase;
     color: var(--text-dim); margin-bottom: 22px;
   }
+  /* Bloc repliable generique (panel-block dont l'en-tete devient un bouton) —
+     inspire visuellement de .preview-hours-toggle/.preview-hours-chevron
+     (accordeon deja existant cote preview publique), mais mecanisme distinct
+     et independant : ne pas confondre les deux. */
+  .panel-block-toggle {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%;
+    background: none; border: none; padding: 0; margin: 0 0 22px;
+    font: inherit; text-align: left; cursor: pointer;
+  }
+  .panel-block-toggle .panel-block-title { margin-bottom: 0; }
+  .panel-block-chevron {
+    flex-shrink: 0; color: var(--text-dim); opacity: 0.7;
+    transition: transform 0.2s;
+  }
+  .panel-block-toggle.open .panel-block-chevron { transform: rotate(180deg); }
+  .panel-block-content { display: none; }
+  .panel-block-content.open { display: block; }
   /* Variante pour #carnetTitle : le nom de l'etablissement rend le titre
      trop long pour l'uppercase + letter-spacing large des autres titres de
      bloc (illisible sur deux lignes). Meme police/couleur/taille, casse
@@ -602,30 +620,44 @@
         </div>
 
         <div class="panel-block">
-          <p class="panel-block-title">Présentation</p>
-          <div class="field">
-            <label for="f-description">Description</label>
-            <textarea id="f-description" placeholder="Présente ton lieu en quelques phrases…"></textarea>
+          <button type="button" class="panel-block-toggle" id="presentationBlockToggle" aria-expanded="false" aria-controls="presentationBlockContent">
+            <p class="panel-block-title">Présentation</p>
+            <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="panel-block-content" id="presentationBlockContent">
+            <div class="field" style="margin-bottom:0;">
+              <label for="f-description">Description</label>
+              <textarea id="f-description" placeholder="Présente ton lieu en quelques phrases…"></textarea>
+            </div>
           </div>
-          <div class="field">
-            <label>Horaires</label>
-            <p class="field-hint" style="margin-top:0; margin-bottom:14px;">Tous les jours sont fermés par défaut. Décochez les jours d'ouverture et indiquez les horaires de chaque service.</p>
-            <div id="hoursGrid"></div>
-            <p class="field-hint">Coche « Fermé ce jour » pour un jour sans ouverture. Ajoute plusieurs services pour une coupure déjeuner / dîner.</p>
-          </div>
-          <div class="field">
-            <label for="f-hours">Précisions complémentaires (optionnel)</label>
-            <textarea id="f-hours" placeholder="Ex: cuisine fermée dès 22h, jours fériés, etc." style="min-height: 70px;"></textarea>
-            <p class="field-hint">Ce champ ne sert plus à indiquer les horaires (utilisez la grille ci-dessus) — réservez-le à des précisions ponctuelles : jours fériés, fermeture exceptionnelle, horaires d'été, etc.</p>
-          </div>
-          <div class="field">
-            <label for="f-reservation_url">Lien de réservation (optionnel)</label>
-            <input type="url" id="f-reservation_url" placeholder="https://…">
-            <p class="field-hint">Lien TheFork, OpenTable, ton site, ou autre.</p>
-          </div>
-          <div class="field" id="field-reservation_label" style="margin-bottom:0; display:none;">
-            <label for="f-reservation_label">Précision (optionnel)</label>
-            <input type="text" id="f-reservation_label" placeholder="ex: Réserver une chambre, Réserver une table...">
+        </div>
+
+        <div class="panel-block">
+          <button type="button" class="panel-block-toggle" id="hoursBlockToggle" aria-expanded="false" aria-controls="hoursBlockContent">
+            <p class="panel-block-title">Horaires</p>
+            <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="panel-block-content" id="hoursBlockContent">
+            <div class="field">
+              <label>Horaires</label>
+              <p class="field-hint" style="margin-top:0; margin-bottom:14px;">Tous les jours sont fermés par défaut. Décochez les jours d'ouverture et indiquez les horaires de chaque service.</p>
+              <div id="hoursGrid"></div>
+              <p class="field-hint">Coche « Fermé ce jour » pour un jour sans ouverture. Ajoute plusieurs services pour une coupure déjeuner / dîner.</p>
+            </div>
+            <div class="field">
+              <label for="f-hours">Précisions complémentaires (optionnel)</label>
+              <textarea id="f-hours" placeholder="Ex: cuisine fermée dès 22h, jours fériés, etc." style="min-height: 70px;"></textarea>
+              <p class="field-hint">Ce champ ne sert plus à indiquer les horaires (utilisez la grille ci-dessus) — réservez-le à des précisions ponctuelles : jours fériés, fermeture exceptionnelle, horaires d'été, etc.</p>
+            </div>
+            <div class="field">
+              <label for="f-reservation_url">Lien de réservation (optionnel)</label>
+              <input type="url" id="f-reservation_url" placeholder="https://…">
+              <p class="field-hint">Lien TheFork, OpenTable, ton site, ou autre.</p>
+            </div>
+            <div class="field" id="field-reservation_label" style="margin-bottom:0; display:none;">
+              <label for="f-reservation_label">Précision (optionnel)</label>
+              <input type="text" id="f-reservation_label" placeholder="ex: Réserver une chambre, Réserver une table...">
+            </div>
           </div>
         </div>
 
@@ -1588,6 +1620,28 @@
     document.getElementById('p-hours-content').classList.toggle('open', hoursOpen);
     this.setAttribute('aria-expanded', hoursOpen ? 'true' : 'false');
   });
+
+  // ---- Blocs de formulaire repliables (generique, reutilisable) --------------
+  // Mecanisme independant de .preview-hours-accordion ci-dessus (qui concerne
+  // la colonne preview publique) — celui-ci s'applique aux panel-block du
+  // formulaire lui-meme. Demarrent toujours replies au chargement, y compris
+  // si les champs qu'ils contiennent sont deja remplis (pas de logique
+  // "ouvert si rempli").
+  function initCollapsibleBlock(headerEl, contentEl) {
+    headerEl.addEventListener('click', function () {
+      var open = contentEl.classList.toggle('open');
+      headerEl.classList.toggle('open', open);
+      headerEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+  initCollapsibleBlock(
+    document.getElementById('presentationBlockToggle'),
+    document.getElementById('presentationBlockContent')
+  );
+  initCollapsibleBlock(
+    document.getElementById('hoursBlockToggle'),
+    document.getElementById('hoursBlockContent')
+  );
 
   init();
 })();
