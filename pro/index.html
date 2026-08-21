@@ -449,13 +449,22 @@
     color: var(--text-dim); margin-top: 34px; margin-bottom: 16px;
   }
   .preview-gallery {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
     margin-bottom: 34px;
   }
-  .preview-gallery img {
-    width: 100%; aspect-ratio: 1/1; object-fit: cover;
+  .preview-gallery-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .preview-gallery-scroll {
+    display: flex; gap: 8px; overflow-x: auto;
+    margin-top: 8px;
+  }
+  .preview-gallery-grid img,
+  .preview-gallery-scroll img {
+    aspect-ratio: 1/1; object-fit: cover;
     border-radius: 12px; background: rgba(255,255,255,0.04);
   }
+  .preview-gallery-grid img { width: 100%; }
+  .preview-gallery-scroll img { flex: 0 0 31%; }
   .preview-empty-note {
     font-size: 12px; color: var(--text-dimmer); font-style: italic;
   }
@@ -1027,9 +1036,15 @@
       row.appendChild(removeBtn);
       container.appendChild(row);
     });
+
+    // Limite a 8 photos (cf. grille 4 + bande scroll 4 cote apercu public) —
+    // le bouton disparait une fois la limite atteinte, reapparait des qu'une
+    // photo est supprimee.
+    document.getElementById('addGalleryPhoto').style.display = photos.length >= 8 ? 'none' : '';
   }
   document.getElementById('addGalleryPhoto').addEventListener('click', function () {
     if (!profile.gallery_photos) profile.gallery_photos = [];
+    if (profile.gallery_photos.length >= 8) return;
     profile.gallery_photos.push('');
     renderGalleryList();
     var inputs = document.querySelectorAll('#galleryList input');
@@ -1554,21 +1569,37 @@
       hoursAccordion.style.display = 'none';
     }
 
-    // Galerie
+    // Galerie — grille fixe des 4 premieres photos + bande de scroll horizontal
+    // pour les 4 suivantes (jamais plus de 8 affichees, defensif si la base
+    // contient davantage d'entrees qu'admis cote admin).
     var galleryEl = document.getElementById('p-gallery');
     var emptyNote = document.getElementById('p-gallery-empty');
-    var photos = (profile.gallery_photos || []).filter(function (u) { return u && u.trim(); });
+    var photos = (profile.gallery_photos || []).filter(function (u) { return u && u.trim(); }).slice(0, 8);
     galleryEl.innerHTML = '';
     if (photos.length) {
-      galleryEl.style.display = 'grid';
+      galleryEl.style.display = 'block';
       emptyNote.style.display = 'none';
-      photos.forEach(function (url) {
+
+      function appendPhoto(container, url) {
         var img = document.createElement('img');
         img.src = url;
         img.alt = profile.business_name || 'Photo';
         img.onerror = function () { img.style.display = 'none'; };
-        galleryEl.appendChild(img);
-      });
+        container.appendChild(img);
+      }
+
+      var gridEl = document.createElement('div');
+      gridEl.className = 'preview-gallery-grid';
+      photos.slice(0, 4).forEach(function (url) { appendPhoto(gridEl, url); });
+      galleryEl.appendChild(gridEl);
+
+      var scrollPhotos = photos.slice(4, 8);
+      if (scrollPhotos.length) {
+        var scrollEl = document.createElement('div');
+        scrollEl.className = 'preview-gallery-scroll';
+        scrollPhotos.forEach(function (url) { appendPhoto(scrollEl, url); });
+        galleryEl.appendChild(scrollEl);
+      }
     } else {
       galleryEl.style.display = 'none';
       emptyNote.style.display = 'block';
