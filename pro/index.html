@@ -253,6 +253,48 @@
   }
   .btn-add:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
 
+  /* HORAIRES STRUCTURES (grille jour par jour, pro_profiles.hours_structured) */
+  .hours-day {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .hours-day:first-child { padding-top: 0; }
+  .hours-day:last-child { border-bottom: none; padding-bottom: 0; }
+  .hours-day-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .hours-day-label {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; color: var(--white);
+  }
+  .hours-closed-toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px; color: var(--text-dim);
+    cursor: pointer;
+  }
+  .hours-closed-toggle input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: var(--white); cursor: pointer;
+  }
+  .hours-ranges { display: flex; flex-direction: column; gap: 8px; }
+  .hours-range-row { align-items: center; margin-bottom: 0; }
+  .hours-range-row input[type="time"] {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px;
+    transition: border-color 0.2s, background 0.2s;
+    color-scheme: dark; /* icone horloge native lisible sur fond sombre */
+  }
+  .hours-range-row input[type="time"]:focus {
+    outline: none; border-color: rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.06);
+  }
+  .hours-range-sep { flex-shrink: 0; color: var(--text-dimmer); font-size: 13px; }
+  .hours-add-range { margin-top: 0; }
+
   /* CARNET (recherche + liste des recommandations) */
   .carnet-result-item {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -561,8 +603,13 @@
             <textarea id="f-description" placeholder="Présente ton lieu en quelques phrases…"></textarea>
           </div>
           <div class="field">
-            <label for="f-hours">Horaires</label>
-            <textarea id="f-hours" placeholder="Mar – Sam, 18h – 02h, fermé dim &amp; lun" style="min-height: 70px;"></textarea>
+            <label>Horaires</label>
+            <div id="hoursGrid"></div>
+            <p class="field-hint">Coche « Fermé ce jour » pour un jour sans ouverture. Ajoute plusieurs services pour une coupure déjeuner / dîner.</p>
+          </div>
+          <div class="field">
+            <label for="f-hours">Précisions complémentaires (optionnel)</label>
+            <textarea id="f-hours" placeholder="Ex: cuisine fermée dès 22h, jours fériés, etc." style="min-height: 70px;"></textarea>
             <p class="field-hint">Texte libre, plusieurs lignes possibles.</p>
           </div>
           <div class="field">
@@ -703,6 +750,15 @@
   var cityLabel = '';       // nom de ville resolu
   var saveTimer = null;
   var hoursOpen = false;    // etat ouvert/ferme de l'accordeon Horaires, persiste entre les re-rendus
+  var HOURS_DAYS = [
+    { key: 'monday', label: 'Lundi' },
+    { key: 'tuesday', label: 'Mardi' },
+    { key: 'wednesday', label: 'Mercredi' },
+    { key: 'thursday', label: 'Jeudi' },
+    { key: 'friday', label: 'Vendredi' },
+    { key: 'saturday', label: 'Samedi' },
+    { key: 'sunday', label: 'Dimanche' }
+  ];
   var otpEmail = '';        // email capture a l'envoi du code, reutilise pour verifyOtp
   var recommendations = []; // lignes pro_recommendations de la fiche courante
 
@@ -859,6 +915,7 @@
 
     renderGalleryList();
     renderMenuDocumentsList();
+    renderHoursGrid();
     renderPublishState();
     loadRecommendations();
   }
@@ -983,6 +1040,149 @@
     var inputs = document.querySelectorAll('#menuList input');
     if (inputs.length >= 2) inputs[inputs.length - 2].focus();
   });
+
+  // ---- Horaires structures (grille jour par jour) -----------------------------
+  // profile.hours_structured : { monday: { closed: bool, ranges: [{open,close}] }, ... }
+  // Reste `null` tant que le partenaire n'a rien modifie dans la grille — la
+  // lecture (getHoursStructured) ne mute jamais profile, seule une interaction
+  // reelle (ensureHoursStructured, appelee depuis les handlers ci-dessous)
+  // cree la structure par defaut et declenche scheduleSave(). Evite d'ecraser
+  // une fiche existante avec des valeurs par defaut avant toute sauvegarde
+  // explicite du partenaire.
+  function buildDefaultHoursStructured() {
+    var obj = {};
+    HOURS_DAYS.forEach(function (d) { obj[d.key] = { closed: true, ranges: [] }; });
+    return obj;
+  }
+  function getHoursStructured() {
+    return profile.hours_structured || buildDefaultHoursStructured();
+  }
+  function ensureHoursStructured() {
+    if (!profile.hours_structured) profile.hours_structured = buildDefaultHoursStructured();
+    return profile.hours_structured;
+  }
+  function ensureDayEntry(hs, dayKey) {
+    if (!hs[dayKey]) hs[dayKey] = { closed: true, ranges: [] };
+    return hs[dayKey];
+  }
+
+  function renderHoursGrid() {
+    var container = document.getElementById('hoursGrid');
+    container.innerHTML = '';
+    var data = getHoursStructured();
+
+    HOURS_DAYS.forEach(function (day) {
+      var dayData = data[day.key] || { closed: true, ranges: [] };
+
+      var dayBlock = document.createElement('div');
+      dayBlock.className = 'hours-day';
+
+      var header = document.createElement('div');
+      header.className = 'hours-day-header';
+
+      var label = document.createElement('span');
+      label.className = 'hours-day-label';
+      label.textContent = day.label;
+      header.appendChild(label);
+
+      var closedWrap = document.createElement('label');
+      closedWrap.className = 'hours-closed-toggle';
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = !!dayData.closed;
+      checkbox.addEventListener('change', function (e) {
+        var hs = ensureHoursStructured();
+        var d = ensureDayEntry(hs, day.key);
+        d.closed = e.target.checked;
+        if (d.closed) {
+          d.ranges = [];
+        } else if (!d.ranges.length) {
+          d.ranges.push({ open: '', close: '' });
+        }
+        renderHoursGrid();
+        scheduleSave();
+      });
+      closedWrap.appendChild(checkbox);
+      closedWrap.appendChild(document.createTextNode('Fermé ce jour'));
+      header.appendChild(closedWrap);
+
+      dayBlock.appendChild(header);
+
+      if (!dayData.closed) {
+        var rangesWrap = document.createElement('div');
+        rangesWrap.className = 'hours-ranges';
+
+        dayData.ranges.forEach(function (range, rangeIdx) {
+          var row = document.createElement('div');
+          row.className = 'list-row hours-range-row';
+
+          var openWrap = document.createElement('div');
+          var openInput = document.createElement('input');
+          openInput.type = 'time';
+          openInput.value = range.open || '';
+          openInput.addEventListener('input', function (e) {
+            var hs = ensureHoursStructured();
+            var d = ensureDayEntry(hs, day.key);
+            if (d.ranges[rangeIdx]) d.ranges[rangeIdx].open = e.target.value;
+            scheduleSave();
+          });
+          openWrap.appendChild(openInput);
+
+          var sep = document.createElement('span');
+          sep.className = 'hours-range-sep';
+          sep.textContent = '→';
+
+          var closeWrap = document.createElement('div');
+          var closeInput = document.createElement('input');
+          closeInput.type = 'time';
+          closeInput.value = range.close || '';
+          closeInput.addEventListener('input', function (e) {
+            var hs = ensureHoursStructured();
+            var d = ensureDayEntry(hs, day.key);
+            if (d.ranges[rangeIdx]) d.ranges[rangeIdx].close = e.target.value;
+            scheduleSave();
+          });
+          closeWrap.appendChild(closeInput);
+
+          var removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn-remove';
+          removeBtn.textContent = '×';
+          removeBtn.title = 'Supprimer ce service';
+          removeBtn.addEventListener('click', function () {
+            var hs = ensureHoursStructured();
+            var d = ensureDayEntry(hs, day.key);
+            d.ranges.splice(rangeIdx, 1);
+            renderHoursGrid();
+            scheduleSave();
+          });
+
+          row.appendChild(openWrap);
+          row.appendChild(sep);
+          row.appendChild(closeWrap);
+          row.appendChild(removeBtn);
+          rangesWrap.appendChild(row);
+        });
+
+        var addRangeBtn = document.createElement('button');
+        addRangeBtn.type = 'button';
+        addRangeBtn.className = 'btn-add hours-add-range';
+        addRangeBtn.textContent = '+ Ajouter un service';
+        addRangeBtn.addEventListener('click', function () {
+          var hs = ensureHoursStructured();
+          var d = ensureDayEntry(hs, day.key);
+          d.ranges.push({ open: '', close: '' });
+          renderHoursGrid();
+          scheduleSave();
+        });
+        rangesWrap.appendChild(addRangeBtn);
+
+        dayBlock.appendChild(rangesWrap);
+      }
+
+      container.appendChild(dayBlock);
+    });
+  }
 
   // ---- Publication -------------------------------------------------------
   function renderPublishState() {
@@ -1236,7 +1436,11 @@
         reservation_label: profile.reservation_url ? (profile.reservation_label || null) : null,
         cover_photo_url: profile.cover_photo_url,
         gallery_photos: profile.gallery_photos || [],
-        menu_documents: profile.menu_documents || []
+        menu_documents: profile.menu_documents || [],
+        // Reste `null` tant que le partenaire n'a pas touche a la grille
+        // Horaires (cf. ensureHoursStructured) — jamais ecrase par une valeur
+        // par defaut avant une interaction reelle.
+        hours_structured: profile.hours_structured || null
       })
       .eq('id', profile.id)
       .then(function (res) {
