@@ -601,22 +601,35 @@
       <div class="panel-form">
 
         <div class="panel-block">
-          <p class="panel-block-title">Informations (gérées par Wenno)</p>
-          <div class="readonly-grid">
-            <div>
-              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Nom</label>
-              <div class="field-readonly-value" id="ro-business_name">—</div>
+          <button type="button" class="panel-block-toggle" id="infoBlockToggle" aria-expanded="false" aria-controls="infoBlockContent">
+            <p class="panel-block-title">Informations établissement</p>
+            <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="panel-block-content" id="infoBlockContent">
+            <div class="readonly-grid">
+              <div>
+                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Nom</label>
+                <div class="field-readonly-value" id="ro-business_name">—</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Adresse</label>
+                <div class="field-readonly-value" id="ro-address">—</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Téléphone</label>
+                <div class="field-readonly-value" id="ro-phone">—</div>
+              </div>
             </div>
-            <div>
-              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Adresse</label>
-              <div class="field-readonly-value" id="ro-address">—</div>
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Téléphone</label>
-              <div class="field-readonly-value" id="ro-phone">—</div>
-            </div>
+            <p class="field-hint">Une erreur sur ces informations ? Écris à contact@wenno.app.</p>
           </div>
-          <p class="field-hint">Une erreur sur ces informations ? Écris à contact@wenno.app.</p>
+        </div>
+
+        <div class="panel-block">
+          <p class="panel-block-title">Photo de couverture</p>
+          <div class="field" style="margin-bottom:0;">
+            <label for="f-cover_photo_url">Photo de couverture (URL)</label>
+            <input type="url" id="f-cover_photo_url" placeholder="https://…">
+          </div>
         </div>
 
         <div class="panel-block">
@@ -662,23 +675,25 @@
         </div>
 
         <div class="panel-block">
-          <p class="panel-block-title">Photos</p>
-          <div class="field" style="margin-bottom:0;">
-            <label for="f-cover_photo_url">Photo de couverture (URL)</label>
-            <input type="url" id="f-cover_photo_url" placeholder="https://…">
+          <button type="button" class="panel-block-toggle" id="galleryBlockToggle" aria-expanded="false" aria-controls="galleryBlockContent">
+            <p class="panel-block-title">Galerie photo</p>
+            <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="panel-block-content" id="galleryBlockContent">
+            <div id="galleryList"></div>
+            <button type="button" class="btn-add" id="addGalleryPhoto">+ Ajouter une photo</button>
           </div>
         </div>
 
         <div class="panel-block">
-          <p class="panel-block-title">Galerie photo</p>
-          <div id="galleryList"></div>
-          <button type="button" class="btn-add" id="addGalleryPhoto">+ Ajouter une photo</button>
-        </div>
-
-        <div class="panel-block">
-          <p class="panel-block-title">Menu</p>
-          <div id="menuList"></div>
-          <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
+          <button type="button" class="panel-block-toggle" id="menuBlockToggle" aria-expanded="false" aria-controls="menuBlockContent">
+            <p class="panel-block-title">Menu</p>
+            <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="panel-block-content" id="menuBlockContent">
+            <div id="menuList"></div>
+            <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
+          </div>
         </div>
 
         <div class="panel-block">
@@ -1635,12 +1650,24 @@
     });
   }
   initCollapsibleBlock(
+    document.getElementById('infoBlockToggle'),
+    document.getElementById('infoBlockContent')
+  );
+  initCollapsibleBlock(
     document.getElementById('presentationBlockToggle'),
     document.getElementById('presentationBlockContent')
   );
   initCollapsibleBlock(
     document.getElementById('hoursBlockToggle'),
     document.getElementById('hoursBlockContent')
+  );
+  initCollapsibleBlock(
+    document.getElementById('galleryBlockToggle'),
+    document.getElementById('galleryBlockContent')
+  );
+  initCollapsibleBlock(
+    document.getElementById('menuBlockToggle'),
+    document.getElementById('menuBlockContent')
   );
 
   init();
