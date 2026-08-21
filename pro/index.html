@@ -116,7 +116,7 @@
     color: var(--text-dim);
   }
   .field-hint {
-    font-size: 11px; color: var(--text-dimmer); margin-top: 6px;
+    font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.5); margin-top: 6px;
   }
   .carnet-intro {
     font-family: 'Jost', sans-serif; font-weight: 300;
@@ -609,13 +609,14 @@
           </div>
           <div class="field">
             <label>Horaires</label>
+            <p class="field-hint" style="margin-top:0; margin-bottom:14px;">Tous les jours sont fermés par défaut. Décochez les jours d'ouverture et indiquez les horaires de chaque service.</p>
             <div id="hoursGrid"></div>
             <p class="field-hint">Coche « Fermé ce jour » pour un jour sans ouverture. Ajoute plusieurs services pour une coupure déjeuner / dîner.</p>
           </div>
           <div class="field">
             <label for="f-hours">Précisions complémentaires (optionnel)</label>
             <textarea id="f-hours" placeholder="Ex: cuisine fermée dès 22h, jours fériés, etc." style="min-height: 70px;"></textarea>
-            <p class="field-hint">Texte libre, plusieurs lignes possibles.</p>
+            <p class="field-hint">Ce champ ne sert plus à indiquer les horaires (utilisez la grille ci-dessus) — réservez-le à des précisions ponctuelles : jours fériés, fermeture exceptionnelle, horaires d'été, etc.</p>
           </div>
           <div class="field">
             <label for="f-reservation_url">Lien de réservation (optionnel)</label>
