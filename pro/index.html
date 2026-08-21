@@ -212,7 +212,7 @@
   .panel-block {
     padding: 28px;
     background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border-dark);
+    border: 1px solid rgba(212,175,55,0.3);
     border-radius: 20px;
     margin-bottom: 24px;
   }
@@ -226,14 +226,14 @@
      (accordeon deja existant cote preview publique), mais mecanisme distinct
      et independant : ne pas confondre les deux. */
   .panel-block-toggle {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    display: flex; align-items: center; justify-content: flex-start; gap: 12px;
     width: 100%;
     background: none; border: none; padding: 0; margin: 0 0 22px;
     font: inherit; text-align: left; cursor: pointer;
   }
   .panel-block-toggle .panel-block-title { margin-bottom: 0; }
   .panel-block-chevron {
-    flex-shrink: 0; color: var(--text-dim); opacity: 0.7;
+    flex-shrink: 0; color: #D4AF37;
     transition: transform 0.2s;
   }
   .panel-block-toggle.open .panel-block-chevron { transform: rotate(180deg); }
@@ -602,8 +602,8 @@
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="infoBlockToggle" aria-expanded="false" aria-controls="infoBlockContent">
-            <p class="panel-block-title">Informations établissement</p>
             <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Informations établissement</p>
           </button>
           <div class="panel-block-content" id="infoBlockContent">
             <div class="readonly-grid">
@@ -634,8 +634,8 @@
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="presentationBlockToggle" aria-expanded="false" aria-controls="presentationBlockContent">
-            <p class="panel-block-title">Présentation</p>
             <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Présentation</p>
           </button>
           <div class="panel-block-content" id="presentationBlockContent">
             <div class="field" style="margin-bottom:0;">
@@ -647,8 +647,8 @@
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="hoursBlockToggle" aria-expanded="false" aria-controls="hoursBlockContent">
-            <p class="panel-block-title">Horaires</p>
             <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Horaires</p>
           </button>
           <div class="panel-block-content" id="hoursBlockContent">
             <div class="field">
@@ -676,8 +676,8 @@
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="galleryBlockToggle" aria-expanded="false" aria-controls="galleryBlockContent">
-            <p class="panel-block-title">Galerie photo</p>
             <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Galerie photo</p>
           </button>
           <div class="panel-block-content" id="galleryBlockContent">
             <div id="galleryList"></div>
@@ -687,8 +687,8 @@
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="menuBlockToggle" aria-expanded="false" aria-controls="menuBlockContent">
-            <p class="panel-block-title">Menu</p>
             <svg class="panel-block-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Menu</p>
           </button>
           <div class="panel-block-content" id="menuBlockContent">
             <div id="menuList"></div>
