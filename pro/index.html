@@ -466,6 +466,13 @@
   }
   .preview-gallery-grid img { width: 100%; }
   .preview-gallery-scroll img { flex: 0 0 31%; }
+  .preview-gallery-fallback {
+    aspect-ratio: 1/1; border-radius: 12px; background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dimmer);
+  }
+  .preview-gallery-grid .preview-gallery-fallback { width: 100%; }
+  .preview-gallery-scroll .preview-gallery-fallback { flex: 0 0 31%; }
   .preview-empty-note {
     font-size: 12px; color: var(--text-dimmer); font-style: italic;
   }
@@ -1614,11 +1621,33 @@
       galleryEl.style.display = 'block';
       emptyNote.style.display = 'none';
 
+      // Echec transitoire deja observe (403 ponctuel cote CDN Wix, 200 quelques
+      // minutes plus tard) : avant tout fallback visuel, retente le chargement
+      // 2 fois (delai croissant 600ms / 1200ms, soit 3 tentatives au total).
+      // Cache-buster uniquement sur les retries, jamais sur le chargement
+      // initial, pour ne pas perturber le cache navigateur en usage normal.
       function appendPhoto(container, url) {
         var img = document.createElement('img');
-        img.src = url;
         img.alt = profile.business_name || 'Photo';
-        img.onerror = function () { img.style.display = 'none'; };
+        var attempt = 0;
+        var retryDelays = [600, 1200];
+
+        img.onerror = function () {
+          if (attempt < retryDelays.length) {
+            var delay = retryDelays[attempt];
+            attempt++;
+            setTimeout(function () {
+              img.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'retry=' + Date.now();
+            }, delay);
+          } else {
+            var fallback = document.createElement('div');
+            fallback.className = 'preview-gallery-fallback';
+            fallback.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="M21 15l-5-5L5 21"/><path d="M3 3l18 18"/></svg>';
+            if (img.parentNode) img.parentNode.replaceChild(fallback, img);
+          }
+        };
+
+        img.src = url;
         container.appendChild(img);
       }
 
