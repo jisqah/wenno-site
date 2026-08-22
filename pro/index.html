@@ -442,6 +442,7 @@
     white-space: pre-wrap;
   }
   .preview-hours-content.open { display: block; }
+  .preview-hours-freetext { margin-top: 10px; }
 
   .preview-section-label {
     font-family: 'Josefin Sans', sans-serif; font-weight: 300;
@@ -761,7 +762,8 @@
                 <svg class="preview-hours-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
               </button>
               <div class="preview-hours-content" id="p-hours-content">
-                <span id="p-hours-text"></span>
+                <div id="p-hours-structured-text" style="display:none;"></div>
+                <div id="p-hours-text" class="preview-hours-freetext" style="display:none;"></div>
               </div>
             </div>
 
@@ -1133,6 +1135,25 @@
   function ensureDayEntry(hs, dayKey) {
     if (!hs[dayKey]) hs[dayKey] = { closed: true, ranges: [] };
     return hs[dayKey];
+  }
+
+  // Formate hours_structured en texte lisible pour l'apercu public, un jour
+  // par ligne ("Lundi : 07:00 – 02:00"), plusieurs plages separees par une
+  // virgule. Ordre fixe (HOURS_DAYS), jours fermes ou sans plage valide omis
+  // (pas de ligne "Ferme" — reste concis cote client). Chaine vide si aucun
+  // jour ouvert (ex: hours_structured absent ou tout ferme).
+  function formatHoursStructured(hs) {
+    if (!hs) return '';
+    var lines = [];
+    HOURS_DAYS.forEach(function (day) {
+      var d = hs[day.key];
+      if (!d || d.closed) return;
+      var ranges = (d.ranges || []).filter(function (r) { return r && r.open && r.close; });
+      if (!ranges.length) return;
+      var rangesText = ranges.map(function (r) { return r.open + ' – ' + r.close; }).join(', ');
+      lines.push(day.label + ' : ' + rangesText);
+    });
+    return lines.join('\n');
   }
 
   function renderHoursGrid() {
@@ -1555,13 +1576,26 @@
       descEl.style.display = 'none';
     }
 
-    // Horaires — accordeon, texte affiche tel quel (pre-wrap), pas de logique par jour.
+    // Horaires — accordeon : horaires structures (grille jour par jour) d'abord,
+    // texte libre (precisions complementaires) ensuite s'il est renseigne.
     var hoursAccordion = document.getElementById('p-hours-accordion');
     var hoursToggle = document.getElementById('p-hours-toggle');
     var hoursContent = document.getElementById('p-hours-content');
-    if (profile.hours && profile.hours.trim()) {
+    var structuredEl = document.getElementById('p-hours-structured-text');
+    var freeTextEl = document.getElementById('p-hours-text');
+
+    var structuredText = formatHoursStructured(profile.hours_structured);
+    var freeText = (profile.hours || '').trim();
+
+    if (structuredText || freeText) {
       hoursAccordion.style.display = 'block';
-      document.getElementById('p-hours-text').textContent = profile.hours;
+
+      structuredEl.textContent = structuredText;
+      structuredEl.style.display = structuredText ? 'block' : 'none';
+
+      freeTextEl.textContent = profile.hours || '';
+      freeTextEl.style.display = freeText ? 'block' : 'none';
+
       hoursToggle.classList.toggle('open', hoursOpen);
       hoursContent.classList.toggle('open', hoursOpen);
       hoursToggle.setAttribute('aria-expanded', hoursOpen ? 'true' : 'false');
