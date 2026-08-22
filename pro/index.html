@@ -501,13 +501,13 @@
 
   .preview-menu-toggle {
     width: 100%; padding: 14px 22px;
-    background: transparent; color: var(--white);
-    border: 1px solid var(--border-dark); border-radius: 60px;
+    background: var(--white); color: var(--black);
+    border: 1px solid var(--white); border-radius: 60px;
     font-family: 'Josefin Sans', sans-serif; font-weight: 300;
     font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    cursor: pointer; transition: opacity 0.2s;
   }
-  .preview-menu-toggle:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
+  .preview-menu-toggle:hover { opacity: 0.85; }
   .preview-menu-list {
     margin-top: 18px; display: none; flex-direction: column; gap: 16px;
   }
