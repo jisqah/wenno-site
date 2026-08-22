@@ -92,6 +92,7 @@
   .field input[type="email"],
   .field input[type="text"],
   .field input[type="url"],
+  .field input[type="date"],
   .field textarea {
     width: 100%;
     background: rgba(255,255,255,0.04);
@@ -102,11 +103,29 @@
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
     transition: border-color 0.2s, background 0.2s;
   }
+  .field input[type="date"] { color-scheme: dark; } /* icone calendrier native lisible sur fond sombre */
   .field input:focus, .field textarea:focus {
     outline: none; border-color: rgba(255,255,255,0.45);
     background: rgba(255,255,255,0.06);
   }
   .field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .field input[type="file"] {
+    width: 100%;
+    color: var(--text-dim);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px;
+    padding: 10px 0;
+  }
+  .field input[type="file"]::file-selector-button {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px;
+    padding: 8px 14px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  .field input[type="file"]:disabled { opacity: 0.5; }
   .field-readonly-value {
     padding: 13px 16px;
     background: rgba(255,255,255,0.02);
@@ -449,6 +468,26 @@
     font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
     color: var(--text-dim); margin-top: 34px; margin-bottom: 16px;
   }
+  .preview-event { margin-bottom: 34px; }
+  .preview-event-card {
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .preview-event-photo {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover;
+    border-radius: 12px; margin-bottom: 16px;
+    background: rgba(255,255,255,0.04);
+  }
+  .preview-event-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 400;
+    font-size: 18px; letter-spacing: 0.01em; color: var(--white);
+  }
+  .preview-event-desc {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
+    line-height: 1.7; color: rgba(255,255,255,0.75);
+    white-space: pre-wrap; margin-top: 10px;
+  }
   .preview-gallery {
     margin-bottom: 34px;
   }
@@ -684,6 +723,38 @@
         </div>
 
         <div class="panel-block">
+          <button type="button" class="panel-block-toggle" id="eventBlockToggle" aria-expanded="false" aria-controls="eventBlockContent">
+            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Évènement</p>
+          </button>
+          <div class="panel-block-content" id="eventBlockContent">
+            <div class="field">
+              <label for="f-event_title">Titre</label>
+              <input type="text" id="f-event_title" placeholder="Soirée DJ, Menu de Noël...">
+            </div>
+            <div class="field">
+              <label for="f-event_description">Description</label>
+              <textarea id="f-event_description" placeholder="Décris ton évènement en quelques phrases…"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-event_photo">Photo</label>
+              <div id="eventPhotoPreviewWrap" style="display:none; margin-bottom:12px;">
+                <img id="eventPhotoPreviewImg" alt="Photo évènement" style="width:120px; height:120px; object-fit:cover; border-radius:12px; display:block; margin-bottom:8px; background: rgba(255,255,255,0.04);">
+                <button type="button" class="btn-outline" id="removeEventPhoto">Retirer la photo</button>
+              </div>
+              <input type="file" id="f-event_photo" accept="image/jpeg,image/png,image/webp">
+              <p class="field-hint" id="eventPhotoStatus" style="display:none;"></p>
+              <p class="field-hint">JPEG, PNG ou WEBP, 5 Mo maximum.</p>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="f-event_end_date">Date de fin</label>
+              <input type="date" id="f-event_end_date">
+              <p class="field-hint">Passé cette date, l'évènement disparaît automatiquement de la fiche publique (rien n'est supprimé en base).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="galleryBlockToggle" aria-expanded="false" aria-controls="galleryBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             <p class="panel-block-title">Galerie photo</p>
@@ -767,6 +838,15 @@
             </div>
 
             <p class="preview-desc" id="p-desc" style="display:none;"></p>
+
+            <div class="preview-event" id="p-event" style="display:none;">
+              <p class="preview-section-label">Évènement</p>
+              <div class="preview-event-card">
+                <img class="preview-event-photo" id="p-event-photo" style="display:none;" alt="">
+                <h3 class="preview-event-title" id="p-event-title"></h3>
+                <p class="preview-event-desc" id="p-event-desc" style="display:none;"></p>
+              </div>
+            </div>
 
             <button type="button" class="preview-menu-toggle" id="p-menu-toggle" style="display:none;">Voir le menu</button>
             <div class="preview-menu-list" id="p-menu-list"></div>
@@ -975,6 +1055,11 @@
     document.getElementById('field-reservation_label').style.display = profile.reservation_url ? '' : 'none';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
 
+    document.getElementById('f-event_title').value = profile.event_title || '';
+    document.getElementById('f-event_description').value = profile.event_description || '';
+    document.getElementById('f-event_end_date').value = profile.event_end_date || '';
+    renderEventPhotoPreview();
+
     document.getElementById('carnetTitle').textContent = (profile.business_name || 'établissement') + " - Notre carnet d'adresses";
 
     renderGalleryList();
@@ -985,7 +1070,7 @@
   }
 
   // ---- Champs simples : ecoute + autosave ------------------------------------
-  ['description', 'hours', 'reservation_url', 'reservation_label', 'cover_photo_url'].forEach(function (key) {
+  ['description', 'hours', 'reservation_url', 'reservation_label', 'cover_photo_url', 'event_title', 'event_description', 'event_end_date'].forEach(function (key) {
     document.getElementById('f-' + key).addEventListener('input', function (e) {
       profile[key] = e.target.value;
       renderPreview();
@@ -998,6 +1083,110 @@
   // generique ci-dessus (qui gere deja la saisie du champ lui-meme).
   document.getElementById('f-reservation_url').addEventListener('input', function () {
     document.getElementById('field-reservation_label').style.display = this.value.trim() ? '' : 'none';
+  });
+
+  // ---- Evenement : upload photo direct vers Supabase Storage -----------------
+  // Bucket dedie pro-event-photos (cf. migration 063) : lecture publique,
+  // ecriture reservee aux editeurs du profil concerne — verifie cote DB via
+  // pro_profile_editors, pas seulement cote client (cf. RLS de la policy
+  // d'insertion). Nom de fichier genere ici, jamais le nom original envoye
+  // par le navigateur (evite traversee de chemin / caracteres speciaux /
+  // collision) : <google_place_id>/event-<timestamp>.<extension derivee du
+  // type MIME reellement detecte>.
+  var EVENT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+  var EVENT_PHOTO_ALLOWED_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+
+  // Verification legere des premiers octets ("magic bytes") du fichier avant
+  // upload — un filtre UX en plus, pas LA protection : le Content-Type
+  // annonce par le navigateur (et meme ce sniffing cote client) peuvent en
+  // theorie etre contournes par un client qui n'est pas un vrai navigateur ;
+  // la vraie garantie reste allowed_mime_types + RLS sur le bucket cote
+  // serveur, qui s'appliquent quoi qu'il arrive.
+  function detectImageMimeFromBytes(bytes) {
+    if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'image/jpeg';
+    if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png';
+    if (bytes.length >= 12 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return 'image/webp';
+    return null;
+  }
+
+  function renderEventPhotoPreview() {
+    var wrap = document.getElementById('eventPhotoPreviewWrap');
+    var img = document.getElementById('eventPhotoPreviewImg');
+    if (profile.event_photo_url) {
+      img.src = profile.event_photo_url;
+      wrap.style.display = 'block';
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  document.getElementById('removeEventPhoto').addEventListener('click', function () {
+    profile.event_photo_url = null;
+    renderEventPhotoPreview();
+    renderPreview();
+    scheduleSave();
+  });
+
+  document.getElementById('f-event_photo').addEventListener('change', function (e) {
+    var fileInput = e.target;
+    var file = fileInput.files && fileInput.files[0];
+    var statusEl = document.getElementById('eventPhotoStatus');
+    if (!file) return;
+
+    if (file.size > EVENT_PHOTO_MAX_BYTES) {
+      window.alert('Cette photo dépasse 5 Mo. Choisis un fichier plus léger.');
+      fileInput.value = '';
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function (evt) {
+      var bytes = new Uint8Array(evt.target.result);
+      var detectedType = detectImageMimeFromBytes(bytes);
+      var ext = detectedType && EVENT_PHOTO_ALLOWED_TYPES[detectedType];
+
+      if (!ext) {
+        window.alert("Ce fichier ne semble pas être une image JPEG, PNG ou WEBP valide.");
+        fileInput.value = '';
+        return;
+      }
+
+      // Rate limiting basique : desactive l'input le temps de l'upload pour
+      // eviter une double soumission accidentelle.
+      fileInput.disabled = true;
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Envoi en cours…';
+
+      var path = profile.google_place_id + '/event-' + Date.now() + '.' + ext;
+
+      sb.storage.from('pro-event-photos').upload(path, file, { contentType: detectedType, upsert: false })
+        .then(function (res) {
+          fileInput.disabled = false;
+          fileInput.value = '';
+          if (res.error) {
+            statusEl.textContent = "Échec de l'envoi, réessaie.";
+            console.error('[pro] event photo upload error', res.error);
+            return;
+          }
+          var publicUrlData = sb.storage.from('pro-event-photos').getPublicUrl(path).data;
+          profile.event_photo_url = publicUrlData.publicUrl;
+          statusEl.style.display = 'none';
+          renderEventPhotoPreview();
+          renderPreview();
+          scheduleSave();
+        })
+        .catch(function (err) {
+          fileInput.disabled = false;
+          fileInput.value = '';
+          statusEl.textContent = "Échec de l'envoi, réessaie.";
+          console.error('[pro] event photo upload exception', err);
+        });
+    };
+    reader.onerror = function () {
+      window.alert("Impossible de lire ce fichier.");
+      fileInput.value = '';
+    };
+    reader.readAsArrayBuffer(file.slice(0, 12));
   });
 
   // ---- Galerie photo (liste dynamique) ---------------------------------------
@@ -1153,6 +1342,16 @@
       lines.push(day.label + ' : ' + rangesText);
     });
     return lines.join('\n');
+  }
+
+  // Date du jour au format ISO (YYYY-MM-DD), comparable directement a
+  // profile.event_end_date (colonne `date` Postgres, meme format que
+  // l'input type="date") — comparaison lexicographique valide sur ce format.
+  function todayISODate() {
+    var d = new Date();
+    var mm = d.getMonth() + 1;
+    var dd = d.getDate();
+    return d.getFullYear() + '-' + (mm < 10 ? '0' : '') + mm + '-' + (dd < 10 ? '0' : '') + dd;
   }
 
   function renderHoursGrid() {
@@ -1529,7 +1728,13 @@
         // Reste `null` tant que le partenaire n'a pas touche a la grille
         // Horaires (cf. ensureHoursStructured) — jamais ecrase par une valeur
         // par defaut avant une interaction reelle.
-        hours_structured: profile.hours_structured || null
+        hours_structured: profile.hours_structured || null,
+        event_title: profile.event_title || null,
+        event_description: profile.event_description || null,
+        event_photo_url: profile.event_photo_url || null,
+        // event_end_date est une colonne `date` Postgres : jamais envoyer une
+        // chaine vide (invalide), toujours null si le champ n'est pas rempli.
+        event_end_date: profile.event_end_date || null
       })
       .eq('id', profile.id)
       .then(function (res) {
@@ -1573,6 +1778,34 @@
       descEl.style.display = 'block';
     } else {
       descEl.style.display = 'none';
+    }
+
+    // Evenement — visible seulement si un titre est renseigne ET que la date
+    // de fin n'est pas depassee (ou absente). Ne supprime jamais rien en
+    // base : la date passee masque juste cote affichage.
+    var eventEl = document.getElementById('p-event');
+    var eventTitle = (profile.event_title || '').trim();
+    var eventNotExpired = !profile.event_end_date || profile.event_end_date >= todayISODate();
+
+    if (eventTitle && eventNotExpired) {
+      eventEl.style.display = 'block';
+      document.getElementById('p-event-title').textContent = eventTitle;
+
+      var eventDesc = (profile.event_description || '').trim();
+      var eventDescEl = document.getElementById('p-event-desc');
+      eventDescEl.textContent = eventDesc;
+      eventDescEl.style.display = eventDesc ? 'block' : 'none';
+
+      var eventPhotoEl = document.getElementById('p-event-photo');
+      if (profile.event_photo_url) {
+        eventPhotoEl.src = profile.event_photo_url;
+        eventPhotoEl.style.display = 'block';
+        eventPhotoEl.onerror = function () { eventPhotoEl.style.display = 'none'; };
+      } else {
+        eventPhotoEl.style.display = 'none';
+      }
+    } else {
+      eventEl.style.display = 'none';
     }
 
     // Horaires — accordeon : horaires structures (grille jour par jour) d'abord,
@@ -1737,6 +1970,10 @@
   initCollapsibleBlock(
     document.getElementById('hoursBlockToggle'),
     document.getElementById('hoursBlockContent')
+  );
+  initCollapsibleBlock(
+    document.getElementById('eventBlockToggle'),
+    document.getElementById('eventBlockContent')
   );
   initCollapsibleBlock(
     document.getElementById('galleryBlockToggle'),
