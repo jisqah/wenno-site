@@ -258,17 +258,6 @@
   .panel-block-toggle.open .panel-block-chevron { transform: rotate(180deg); }
   .panel-block-content { display: none; }
   .panel-block-content.open { display: block; }
-  /* Variante pour #carnetTitle : le nom de l'etablissement rend le titre
-     trop long pour l'uppercase + letter-spacing large des autres titres de
-     bloc (illisible sur deux lignes). Meme police/couleur/taille, casse
-     normale et espacement reduit. Ne touche pas a .panel-block-title. */
-  #carnetTitle {
-    text-transform: none;
-    letter-spacing: 0.01em;
-    font-size: clamp(16px, 4vw, 20px);
-    font-weight: 600;
-  }
-
   .readonly-grid { display: grid; gap: 14px; margin-bottom: 4px; }
 
   /* dynamic list rows (gallery photos / menu items) */
@@ -777,22 +766,27 @@
         </div>
 
         <div class="panel-block">
-          <p class="panel-block-title" id="carnetTitle">Carnet</p>
-          <p class="carnet-intro">Vous avez d'autres établissements de votre groupe à recommander ? Vous souhaitez partager vos bonnes adresses ? Indiquez ici les lieux que vous souhaitez faire découvrir à vos clients.</p>
+          <button type="button" class="panel-block-toggle" id="carnetBlockToggle" aria-expanded="false" aria-controls="carnetBlockContent">
+            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Votre carnet d'adresses</p>
+          </button>
+          <div class="panel-block-content" id="carnetBlockContent">
+            <p class="carnet-intro">Vous avez d'autres établissements de votre groupe à recommander ? Vous souhaitez partager vos bonnes adresses ? Indiquez ici les lieux que vous souhaitez faire découvrir à vos clients.</p>
 
-          <div class="field">
-            <label for="carnetSearchInput">Rechercher un lieu à recommander</label>
-            <div style="display:flex; gap:8px;">
-              <input type="text" id="carnetSearchInput" placeholder="Nom du lieu, adresse…" style="flex:1;">
-              <button type="button" class="btn-outline" id="carnetSearchBtn" style="flex-shrink:0;">Rechercher</button>
+            <div class="field">
+              <label for="carnetSearchInput">Rechercher un lieu à recommander</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="carnetSearchInput" placeholder="Nom du lieu, adresse…" style="flex:1;">
+                <button type="button" class="btn-outline" id="carnetSearchBtn" style="flex-shrink:0;">Rechercher</button>
+              </div>
+              <p class="field-hint" id="carnetSearchStatus" style="display:none;"></p>
             </div>
-            <p class="field-hint" id="carnetSearchStatus" style="display:none;"></p>
+
+            <div id="carnetResultsList"></div>
+
+            <div id="carnetSavedList" style="margin-top:24px;"></div>
+            <p class="field-hint" id="carnetEmptyNote">Aucune recommandation ajoutée pour l'instant.</p>
           </div>
-
-          <div id="carnetResultsList"></div>
-
-          <div id="carnetSavedList" style="margin-top:24px;"></div>
-          <p class="field-hint" id="carnetEmptyNote">Aucune recommandation ajoutée pour l'instant.</p>
         </div>
 
         <div class="panel-block publish-block">
@@ -1059,8 +1053,6 @@
     document.getElementById('f-event_description').value = profile.event_description || '';
     document.getElementById('f-event_end_date').value = profile.event_end_date || '';
     renderEventPhotoPreview();
-
-    document.getElementById('carnetTitle').textContent = (profile.business_name || 'établissement') + " - Notre carnet d'adresses";
 
     renderGalleryList();
     renderMenuDocumentsList();
@@ -1982,6 +1974,10 @@
   initCollapsibleBlock(
     document.getElementById('menuBlockToggle'),
     document.getElementById('menuBlockContent')
+  );
+  initCollapsibleBlock(
+    document.getElementById('carnetBlockToggle'),
+    document.getElementById('carnetBlockContent')
   );
 
   init();
