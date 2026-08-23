@@ -169,6 +169,20 @@
   }
   .btn-outline:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
 
+  .help-link {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 40px;
+    transition: color 0.2s, background 0.2s;
+    z-index: 10;
+  }
+  .help-link:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+
   .form-error {
     font-size: 13px; color: #ff8a8a; margin-top: 14px; text-align: left;
   }
@@ -556,6 +570,7 @@
     main { padding: 0 16px; }
     .panel-block { padding: 22px; }
     .preview-inner { padding: 24px; }
+    .help-link { bottom: 16px; right: 16px; font-size: 11px; padding: 6px 12px; }
   }
 </style>
 </head>
@@ -604,6 +619,7 @@
         </form>
       </div>
     </div>
+    <a href="mailto:contact@wenno.app" class="help-link">Besoin d'aide ?</a>
   </div>
 
   <!-- NO PROFILE -->
