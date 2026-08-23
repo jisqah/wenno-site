@@ -54,6 +54,7 @@
     transition: border-color 0.2s, color 0.2s;
   }
   .nav-signout:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+  .nav-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
   main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
@@ -182,8 +183,8 @@
   .help-link:hover { color: var(--white); background: rgba(255,255,255,0.04); }
   /* Variante flottante : ecrans .center-screen pleine page (login, picker),
      sans element concurrent dans le coin bas-droite. Ne pas utiliser sur
-     screen-editor, dont le panneau preview (colonne droite) peut se
-     retrouver sous ce coin au scroll — voir .editor-header-right a la place. */
+     screen-editor : le lien y est integre a la nav globale, a cote de
+     #signOutBtn (cf. .nav-right), pas flottant. */
   .help-link--fixed {
     position: fixed;
     bottom: 20px; right: 20px;
@@ -220,10 +221,6 @@
   .editor-header-title {
     font-family: 'Josefin Sans', sans-serif; font-weight: 200;
     font-size: 20px; letter-spacing: 0.02em;
-  }
-  .editor-header-right {
-    display: flex; align-items: center; gap: 16px;
-    flex-wrap: wrap;
   }
   .save-status {
     font-family: 'Jost', sans-serif; font-weight: 300;
@@ -590,7 +587,10 @@
 <nav>
   <a href="/" class="nav-logo">wenno</a>
   <span class="nav-tag">Espace partenaire</span>
-  <button class="nav-signout" id="signOutBtn" style="display:none;">Déconnexion</button>
+  <div class="nav-right">
+    <a href="mailto:contact@wenno.app" class="help-link" id="navHelpLink" style="display:none;">Besoin d'aide ?</a>
+    <button class="nav-signout" id="signOutBtn" style="display:none;">Déconnexion</button>
+  </div>
 </nav>
 
 <main>
@@ -657,10 +657,7 @@
   <div id="screen-editor">
     <div class="editor-header">
       <span class="editor-header-title" id="editorHeaderTitle"></span>
-      <div class="editor-header-right">
-        <a href="mailto:contact@wenno.app" class="help-link">Besoin d'aide ?</a>
-        <span class="save-status" id="saveStatus"><span class="dot"></span><span id="saveStatusText">—</span></span>
-      </div>
+      <span class="save-status" id="saveStatus"><span class="dot"></span><span id="saveStatusText">—</span></span>
     </div>
 
     <div class="editor-layout">
@@ -939,6 +936,9 @@
       el.style.display = (s === name) ? '' : 'none';
     });
     document.getElementById('signOutBtn').style.display = (name === 'none' || name === 'picker' || name === 'editor') ? 'inline-block' : 'none';
+    // #screen-login/#screen-picker gardent leur propre lien flottant
+    // (.help-link--fixed) — celui de la nav ne concerne que l'editeur.
+    document.getElementById('navHelpLink').style.display = (name === 'editor') ? 'inline-block' : 'none';
   }
   showScreen('loading'); // etat initial pose de facon synchrone, avant meme getSession() (async) — evite tout flash des ecrans
 
