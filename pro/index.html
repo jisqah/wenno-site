@@ -485,10 +485,23 @@
     border-radius: 16px;
     padding: 20px;
   }
-  .preview-event-photo {
-    width: 100%; aspect-ratio: 16/9; object-fit: cover;
-    border-radius: 12px; margin-bottom: 16px;
+  .preview-event-photo-frame {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 16px;
+    padding: 4px;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 14px;
     background: rgba(255,255,255,0.04);
+  }
+  .preview-event-photo {
+    display: block;
+    max-width: 100%;
+    max-height: 420px;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
   }
   .preview-event-title {
     font-family: 'Josefin Sans', sans-serif; font-weight: 400;
@@ -864,7 +877,9 @@
             <div class="preview-event" id="p-event" style="display:none;">
               <p class="preview-section-label">Évènement</p>
               <div class="preview-event-card">
-                <img class="preview-event-photo" id="p-event-photo" style="display:none;" alt="">
+                <div class="preview-event-photo-frame" id="p-event-photo-frame" style="display:none;">
+                  <img class="preview-event-photo" id="p-event-photo" alt="">
+                </div>
                 <h3 class="preview-event-title" id="p-event-title"></h3>
                 <p class="preview-event-desc" id="p-event-desc" style="display:none;"></p>
               </div>
@@ -1820,12 +1835,13 @@
       eventDescEl.style.display = eventDesc ? 'block' : 'none';
 
       var eventPhotoEl = document.getElementById('p-event-photo');
+      var eventPhotoFrameEl = document.getElementById('p-event-photo-frame');
       if (profile.event_photo_url) {
         eventPhotoEl.src = profile.event_photo_url;
-        eventPhotoEl.style.display = 'block';
-        eventPhotoEl.onerror = function () { eventPhotoEl.style.display = 'none'; };
+        eventPhotoFrameEl.style.display = 'block';
+        eventPhotoEl.onerror = function () { eventPhotoFrameEl.style.display = 'none'; };
       } else {
-        eventPhotoEl.style.display = 'none';
+        eventPhotoFrameEl.style.display = 'none';
       }
     } else {
       eventEl.style.display = 'none';
