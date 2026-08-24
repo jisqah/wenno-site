@@ -94,6 +94,7 @@
   .field input[type="text"],
   .field input[type="url"],
   .field input[type="date"],
+  .field input[type="datetime-local"],
   .field textarea {
     width: 100%;
     background: rgba(255,255,255,0.04);
@@ -104,7 +105,8 @@
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
     transition: border-color 0.2s, background 0.2s;
   }
-  .field input[type="date"] { color-scheme: dark; } /* icone calendrier native lisible sur fond sombre */
+  .field input[type="date"],
+  .field input[type="datetime-local"] { color-scheme: dark; } /* icone calendrier native lisible sur fond sombre */
   .field input:focus, .field textarea:focus {
     outline: none; border-color: rgba(255,255,255,0.45);
     background: rgba(255,255,255,0.06);
@@ -479,11 +481,11 @@
     font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
     color: var(--text-dim); margin-top: 34px; margin-bottom: 16px;
   }
-  .preview-event { margin-bottom: 34px; }
-  .preview-event-card {
-    border: 1px solid rgba(212,175,55,0.3);
-    border-radius: 16px;
-    padding: 20px;
+  .preview-event { margin-bottom: 34px; text-align: center; }
+  .preview-event-startdate {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 14px; color: #D4AF37;
+    margin-bottom: 6px;
   }
   .preview-event-photo-frame {
     display: block;
@@ -506,11 +508,13 @@
   .preview-event-title {
     font-family: 'Josefin Sans', sans-serif; font-weight: 400;
     font-size: 18px; letter-spacing: 0.01em; color: var(--white);
+    margin-bottom: 16px;
   }
   .preview-event-desc {
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
     line-height: 1.7; color: rgba(255,255,255,0.75);
     white-space: pre-wrap; margin-top: 10px;
+    text-align: left;
   }
   .preview-gallery {
     margin-bottom: 34px;
@@ -776,6 +780,10 @@
               <p class="field-hint" id="eventPhotoStatus" style="display:none;"></p>
               <p class="field-hint">JPEG, PNG ou WEBP, 5 Mo maximum.</p>
             </div>
+            <div class="field">
+              <label for="f-event_start_date">Date de début (optionnel)</label>
+              <input type="datetime-local" id="f-event_start_date">
+            </div>
             <div class="field" style="margin-bottom:0;">
               <label for="f-event_end_date">Date de fin</label>
               <input type="date" id="f-event_end_date">
@@ -875,14 +883,13 @@
             <p class="preview-desc" id="p-desc" style="display:none;"></p>
 
             <div class="preview-event" id="p-event" style="display:none;">
-              <p class="preview-section-label">Évènement</p>
-              <div class="preview-event-card">
-                <div class="preview-event-photo-frame" id="p-event-photo-frame" style="display:none;">
-                  <img class="preview-event-photo" id="p-event-photo" alt="">
-                </div>
-                <h3 class="preview-event-title" id="p-event-title"></h3>
-                <p class="preview-event-desc" id="p-event-desc" style="display:none;"></p>
+              <p class="preview-section-label">Save the date</p>
+              <p class="preview-event-startdate" id="p-event-startdate" style="display:none;"></p>
+              <h3 class="preview-event-title" id="p-event-title"></h3>
+              <div class="preview-event-photo-frame" id="p-event-photo-frame" style="display:none;">
+                <img class="preview-event-photo" id="p-event-photo" alt="">
               </div>
+              <p class="preview-event-desc" id="p-event-desc" style="display:none;"></p>
             </div>
 
             <button type="button" class="preview-menu-toggle" id="p-menu-toggle" style="display:none;">Voir le menu</button>
@@ -1097,6 +1104,7 @@
 
     document.getElementById('f-event_title').value = profile.event_title || '';
     document.getElementById('f-event_description').value = profile.event_description || '';
+    document.getElementById('f-event_start_date').value = toDatetimeLocalValue(profile.event_start_date);
     document.getElementById('f-event_end_date').value = profile.event_end_date || '';
     renderEventPhotoPreview();
 
@@ -1121,6 +1129,17 @@
   // generique ci-dessus (qui gere deja la saisie du champ lui-meme).
   document.getElementById('f-reservation_url').addEventListener('input', function () {
     document.getElementById('field-reservation_label').style.display = this.value.trim() ? '' : 'none';
+  });
+
+  // event_start_date est un timestamptz : contrairement aux champs texte/date
+  // simples geres par la boucle generique ci-dessus, la valeur de l'input
+  // ("YYYY-MM-DDTHH:MM", heure locale du navigateur) doit etre convertie en
+  // ISO UTC avant sauvegarde — d'ou une ecoute dediee plutot qu'un ajout a
+  // la liste des champs simples.
+  document.getElementById('f-event_start_date').addEventListener('input', function (e) {
+    profile.event_start_date = e.target.value ? new Date(e.target.value).toISOString() : null;
+    renderPreview();
+    scheduleSave();
   });
 
   // ---- Evenement : upload photo direct vers Supabase Storage -----------------
@@ -1390,6 +1409,72 @@
     var mm = d.getMonth() + 1;
     var dd = d.getDate();
     return d.getFullYear() + '-' + (mm < 10 ? '0' : '') + mm + '-' + (dd < 10 ? '0' : '') + dd;
+  }
+
+  // Convertit un timestamptz stocke (ISO UTC) vers le format attendu par un
+  // input type="datetime-local" ("YYYY-MM-DDTHH:MM", heure locale du
+  // navigateur — c'est le seul format que ce type de champ accepte).
+  function toDatetimeLocalValue(isoString) {
+    if (!isoString) return '';
+    var d = new Date(isoString);
+    if (isNaN(d.getTime())) return '';
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  var MONTHS_FR = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+
+  // Formate event_start_date (timestamptz, stocke en UTC) en "15 septembre
+  // 2026 à 20h00". Utilise le fuseau du profil si disponible (Intl,
+  // supporte timeZone nativement dans tous les navigateurs modernes) ; sinon
+  // affiche les composantes UTC telles qu'enregistrees — jamais l'heure
+  // locale de la machine qui a la page ouverte, qui n'a aucun rapport avec
+  // l'etablissement et rendrait l'apercu incoherent selon qui le regarde.
+  function formatEventStartDate(isoString, timezone) {
+    if (!isoString) return '';
+    var date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+
+    var day, month, year, hour, minute;
+
+    if (timezone) {
+      try {
+        var formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          year: 'numeric', month: 'numeric', day: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: false
+        });
+        var parts = formatter.formatToParts(date);
+        var get = function (type) {
+          var found = parts.filter(function (p) { return p.type === type; })[0];
+          return found ? found.value : null;
+        };
+        day = parseInt(get('day'), 10);
+        month = parseInt(get('month'), 10) - 1;
+        year = parseInt(get('year'), 10);
+        var hourStr = get('hour');
+        hour = hourStr != null ? parseInt(hourStr, 10) : NaN;
+        if (hour === 24) hour = 0;
+        minute = parseInt(get('minute'), 10);
+      } catch (e) {
+        timezone = null;
+      }
+    }
+
+    if (!timezone || isNaN(day) || isNaN(hour)) {
+      day = date.getUTCDate();
+      month = date.getUTCMonth();
+      year = date.getUTCFullYear();
+      hour = date.getUTCHours();
+      minute = date.getUTCMinutes();
+    }
+
+    var pad2 = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return day + ' ' + MONTHS_FR[month] + ' ' + year + ' à ' + pad2(hour) + 'h' + pad2(minute);
   }
 
   function renderHoursGrid() {
@@ -1770,6 +1855,8 @@
         event_title: profile.event_title || null,
         event_description: profile.event_description || null,
         event_photo_url: profile.event_photo_url || null,
+        // Deja converti en ISO UTC par le listener dedie de f-event_start_date.
+        event_start_date: profile.event_start_date || null,
         // event_end_date est une colonne `date` Postgres : jamais envoyer une
         // chaine vide (invalide), toujours null si le champ n'est pas rempli.
         event_end_date: profile.event_end_date || null
@@ -1827,6 +1914,12 @@
 
     if (eventTitle && eventNotExpired) {
       eventEl.style.display = 'block';
+
+      var eventStartDateEl = document.getElementById('p-event-startdate');
+      var eventStartDateLabel = formatEventStartDate(profile.event_start_date, profile.timezone);
+      eventStartDateEl.textContent = eventStartDateLabel;
+      eventStartDateEl.style.display = eventStartDateLabel ? 'block' : 'none';
+
       document.getElementById('p-event-title').textContent = eventTitle;
 
       var eventDesc = (profile.event_description || '').trim();
