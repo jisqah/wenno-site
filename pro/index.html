@@ -880,10 +880,16 @@
               <label for="f-event_start_date">Date de début (optionnel)</label>
               <input type="datetime-local" id="f-event_start_date">
             </div>
-            <div class="field" style="margin-bottom:0;">
+            <div class="field">
               <label for="f-event_end_date">Date de fin</label>
               <input type="date" id="f-event_end_date">
               <p class="field-hint">Passé cette date, l'évènement disparaît automatiquement de la fiche publique (rien n'est supprimé en base).</p>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="f-event_notify_date">Notification mobile pour vos abonnés :</label>
+              <input type="datetime-local" id="f-event_notify_date">
+              <p class="field-hint">Optionnel — programmez l'envoi d'une notification push aux utilisateurs ayant ce lieu en favori.</p>
+              <p class="field-hint" id="eventNotifySentStatus" style="display:none;"></p>
             </div>
           </div>
         </div>
@@ -1217,6 +1223,8 @@
     document.getElementById('f-event_description').value = profile.event_description || '';
     document.getElementById('f-event_start_date').value = toDatetimeLocalValue(profile.event_start_date);
     document.getElementById('f-event_end_date').value = profile.event_end_date || '';
+    document.getElementById('f-event_notify_date').value = toDatetimeLocalValue(profile.event_notify_date);
+    renderEventNotifySentStatus();
     renderEventPhotoPreview();
 
     renderGalleryList();
@@ -1251,6 +1259,46 @@
     profile.event_start_date = e.target.value ? new Date(e.target.value).toISOString() : null;
     renderPreview();
     scheduleSave();
+  });
+
+  // event_notify_date declenche un envoi push reel aux abonnes du lieu (cf.
+  // migration 068 / send-event-notifications) : contrairement aux autres
+  // champs du bloc Evenement (sauvegarde silencieuse), toute saisie/
+  // modification d'une date doit etre confirmee explicitement. Ecoute sur
+  // 'change' (pas 'input') pour ne demander confirmation qu'une fois le champ
+  // quitte, pas a chaque frappe. Vider le champ (annuler un envoi programme)
+  // ne presente aucun risque : aucune confirmation dans ce sens.
+  document.getElementById('f-event_notify_date').addEventListener('change', function (e) {
+    var newValue = e.target.value;
+
+    if (!newValue) {
+      profile.event_notify_date = null;
+      scheduleSave();
+      renderEventNotifySentStatus();
+      return;
+    }
+
+    var formattedDate = formatDatetimeLocalForConfirm(newValue);
+    var confirmed = window.confirm(
+      'Une notification sera envoyée à vos abonnés le ' + formattedDate + '. Confirmer l\'envoi ?'
+    );
+
+    if (!confirmed) {
+      // Revient exactement a la valeur sauvegardee precedente (vide ou date
+      // anterieure) : rien n'est modifie ni envoye a la base.
+      e.target.value = toDatetimeLocalValue(profile.event_notify_date);
+      return;
+    }
+
+    profile.event_notify_date = new Date(newValue).toISOString();
+    // Une nouvelle date programmee doit pouvoir etre traitee par le job
+    // planifie (get_pending_event_notifications exige event_notify_sent_at
+    // IS NULL, migration 068) : on reinitialise le statut "deja envoyee"
+    // precedent, sinon un envoi deja effectue bloquerait silencieusement
+    // toute reprogrammation future.
+    profile.event_notify_sent_at = null;
+    scheduleSave();
+    renderEventNotifySentStatus();
   });
 
   // ---- Evenement : upload photo direct vers Supabase Storage -----------------
@@ -1628,6 +1676,39 @@
 
     var pad2 = function (n) { return n < 10 ? '0' + n : '' + n; };
     return day + ' ' + MONTHS_FR[month] + ' ' + year + ' à ' + pad2(hour) + 'h' + pad2(minute);
+  }
+
+  // Formate directement la valeur brute d'un input datetime-local
+  // ("YYYY-MM-DDTHH:MM", heure locale du navigateur) sans passer par
+  // new Date()/toISOString() : utilise uniquement pour la boite de
+  // confirmation de f-event_notify_date, afin d'afficher exactement ce que
+  // le partenaire vient de saisir, sans reinterpretation de fuseau (evite
+  // toute divergence apparente avec formatEventStartDate, qui applique le
+  // fuseau de l'etablissement et pourrait afficher une heure differente si le
+  // partenaire n'est pas dans le meme fuseau que son etablissement).
+  function formatDatetimeLocalForConfirm(localValue) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(localValue);
+    if (!match) return '';
+    var year = parseInt(match[1], 10);
+    var month = parseInt(match[2], 10) - 1;
+    var day = parseInt(match[3], 10);
+    return day + ' ' + MONTHS_FR[month] + ' ' + year + ' à ' + match[4] + 'h' + match[5];
+  }
+
+  // Indication discrete si la notification a deja ete traitee par le job
+  // planifie (event_notify_sent_at, migration 068) — le champ reste
+  // modifiable (une reprogrammation reinitialise ce statut, cf. listener
+  // f-event_notify_date), ce texte evite juste toute confusion sur l'etat
+  // actuel.
+  function renderEventNotifySentStatus() {
+    var el = document.getElementById('eventNotifySentStatus');
+    if (profile.event_notify_sent_at) {
+      el.textContent = 'Déjà envoyée le ' + formatEventStartDate(profile.event_notify_sent_at, profile.timezone) + '.';
+      el.style.display = '';
+    } else {
+      el.textContent = '';
+      el.style.display = 'none';
+    }
   }
 
   function renderHoursGrid() {
@@ -2029,7 +2110,14 @@
         event_start_date: profile.event_start_date || null,
         // event_end_date est une colonne `date` Postgres : jamais envoyer une
         // chaine vide (invalide), toujours null si le champ n'est pas rempli.
-        event_end_date: profile.event_end_date || null
+        event_end_date: profile.event_end_date || null,
+        // Deja converti en ISO UTC (et confirme) par le listener dedie de
+        // f-event_notify_date.
+        event_notify_date: profile.event_notify_date || null,
+        // Reinitialise a null par ce meme listener lors d'une reprogrammation
+        // confirmee ; sinon renvoie simplement la valeur deja chargee
+        // (aucune autre ecoute ne touche a ce champ).
+        event_notify_sent_at: profile.event_notify_sent_at || null
       })
       .eq('id', profile.id)
       .then(function (res) {
