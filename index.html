@@ -31,15 +31,16 @@
     padding: 18px 52px;
     border-bottom: 1px solid var(--border);
   }
-  nav.scrolled .nav-logo,
   nav.scrolled .nav-links a { color: var(--black); }
+  nav.scrolled .nav-logo-img { filter: invert(1); }
 
   .nav-logo {
-    font-family: 'Josefin Sans', sans-serif;
-    font-weight: 100; font-size: 24px;
-    letter-spacing: 0.18em; text-transform: lowercase;
-    color: #fff; text-decoration: none;
-    transition: color 0.3s;
+    display: flex; align-items: center;
+    text-decoration: none;
+  }
+  .nav-logo-img {
+    height: 24px; width: auto;
+    transition: filter 0.3s;
   }
   .nav-links { display: flex; gap: 44px; list-style: none; }
   .nav-links a {
@@ -208,9 +209,12 @@
     flex-wrap: wrap; gap: 20px;
   }
   .footer-logo {
-    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
-    font-size: 22px; letter-spacing: 0.18em; text-transform: lowercase;
-    color: var(--black); text-decoration: none;
+    display: flex; align-items: center;
+    text-decoration: none;
+  }
+  .footer-logo-img {
+    height: 22px; width: auto;
+    filter: invert(1);
   }
   .footer-links { display: flex; gap: 36px; list-style: none; }
   .footer-links a {
@@ -237,7 +241,9 @@
 <body>
 
 <nav id="navbar">
-  <a href="/" class="nav-logo">wenno</a>
+  <a href="/" class="nav-logo">
+    <img src="/assets/wenno_logo_blanc.png" alt="wenno" class="nav-logo-img">
+  </a>
   <ul class="nav-links">
     <li><a href="/privacy">Privacy</a></li>
     <li><a href="/terms">Terms</a></li>
@@ -306,7 +312,9 @@
 </section>
 
 <footer>
-  <a href="/" class="footer-logo">wenno</a>
+  <a href="/" class="footer-logo">
+    <img src="/assets/wenno_logo_blanc.png" alt="wenno" class="footer-logo-img">
+  </a>
   <ul class="footer-links">
     <li><a href="/privacy">Politique de confidentialité</a></li>
     <li><a href="/terms">Conditions d'utilisation</a></li>
