@@ -193,6 +193,52 @@
     z-index: 10;
   }
 
+  /* Bandeau de confirmation "Modifications enregistrées" — complement plus
+     visible du #saveStatus discret du header. Toujours present dans le DOM
+     (pas scope a un ecran en particulier), affiche/masque uniquement via JS
+     depuis setSaveStatus('saved') — en pratique ne peut se declencher que
+     depuis #screen-editor (seul contexte ou une sauvegarde a lieu), donc pas
+     de conflit reel avec .help-link--fixed (login/picker uniquement). */
+  .save-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: calc(100% - 48px);
+    padding: 14px 18px;
+    background: rgba(10,10,10,0.94);
+    border: 1px solid rgba(126,217,150,0.35);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 50;
+  }
+  .save-toast.open {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .save-toast-dot {
+    flex-shrink: 0;
+    width: 10px; height: 10px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: #7ed996;
+  }
+  .save-toast-title {
+    font-family: 'Jost', sans-serif; font-weight: 400;
+    font-size: 14px; color: var(--white);
+    margin-bottom: 2px;
+  }
+  .save-toast-subtitle {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 12px; color: var(--text-dim);
+  }
+
   .form-error {
     font-size: 13px; color: #ff8a8a; margin-top: 14px; text-align: left;
   }
@@ -609,6 +655,14 @@
     <button class="nav-signout" id="signOutBtn" style="display:none;">Déconnexion</button>
   </div>
 </nav>
+
+<div class="save-toast" id="saveToast" role="status" aria-live="polite">
+  <span class="save-toast-dot"></span>
+  <div>
+    <p class="save-toast-title">Modifications enregistrées</p>
+    <p class="save-toast-subtitle">Visibles dans l'application Wenno sous quelques minutes.</p>
+  </div>
+</div>
 
 <main>
 
@@ -1819,12 +1873,29 @@
   }
 
   // ---- Sauvegarde debouncee ------------------------------------------------
+  var saveToastTimer = null;
+
+  // Affiche le bandeau de confirmation, ou reset simplement son timer de
+  // masquage si deja affiche (plusieurs sauvegardes rapprochees = un seul
+  // bandeau, jamais d'empilement).
+  function showSaveToast() {
+    var el = document.getElementById('saveToast');
+    el.classList.add('open');
+    if (saveToastTimer) clearTimeout(saveToastTimer);
+    saveToastTimer = setTimeout(function () {
+      el.classList.remove('open');
+    }, 4000);
+  }
+
   function setSaveStatus(state) {
     var el = document.getElementById('saveStatus');
     var text = document.getElementById('saveStatusText');
     el.className = 'save-status ' + state;
     if (state === 'saving') text.textContent = 'Enregistrement…';
-    else if (state === 'saved') text.textContent = 'Enregistré';
+    else if (state === 'saved') {
+      text.textContent = 'Enregistré';
+      showSaveToast();
+    }
     else if (state === 'error') text.textContent = "Échec de l'enregistrement";
     else text.textContent = '—';
   }
