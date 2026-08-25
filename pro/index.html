@@ -36,10 +36,11 @@
     border-bottom: 1px solid var(--border-dark);
   }
   .nav-logo {
-    font-family: 'Josefin Sans', sans-serif;
-    font-weight: 100; font-size: 22px;
-    letter-spacing: 0.18em; text-transform: lowercase;
+    display: flex; align-items: center;
     text-decoration: none;
+  }
+  .nav-logo-img {
+    height: 22px; width: auto;
   }
   .nav-tag {
     font-family: 'Jost', sans-serif; font-weight: 300;
@@ -686,7 +687,9 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">wenno</a>
+  <a href="/" class="nav-logo">
+    <img src="/assets/wenno_logo_blanc.png" alt="wenno" class="nav-logo-img">
+  </a>
   <span class="nav-tag">Espace partenaire</span>
   <div class="nav-right">
     <a href="mailto:contact@wenno.app" class="help-link" id="navHelpLink" style="display:none;">Besoin d'aide ?</a>
