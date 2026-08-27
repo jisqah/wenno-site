@@ -96,6 +96,7 @@
   .field input[type="url"],
   .field input[type="date"],
   .field input[type="datetime-local"],
+  .field select,
   .field textarea {
     width: 100%;
     background: rgba(255,255,255,0.04);
@@ -106,9 +107,10 @@
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
     transition: border-color 0.2s, background 0.2s;
   }
+  .field select { color-scheme: dark; cursor: pointer; }
   .field input[type="date"],
   .field input[type="datetime-local"] { color-scheme: dark; } /* icone calendrier native lisible sur fond sombre */
-  .field input:focus, .field textarea:focus {
+  .field input:focus, .field select:focus, .field textarea:focus {
     outline: none; border-color: rgba(255,255,255,0.45);
     background: rgba(255,255,255,0.06);
   }
@@ -455,11 +457,52 @@
   }
   .carnet-result-add { flex-shrink: 0; font-size: 20px; color: var(--text-dim); line-height: 1; }
 
+  .carnet-result-category {
+    padding: 12px 14px 14px;
+    margin-top: -8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-dark); border-top: none;
+    border-radius: 0 0 10px 10px;
+  }
+  .carnet-result-category label {
+    display: block;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .carnet-result-category select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
+    color-scheme: dark; cursor: pointer;
+  }
+  .carnet-result-category-error {
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px;
+    color: #e08080; margin-top: 8px; display: none;
+  }
+  .carnet-result-category-confirm {
+    margin-top: 10px;
+  }
+
   .carnet-saved-item {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     padding: 12px 0;
     border-bottom: 1px solid var(--border-dark);
   }
+  .carnet-saved-category {
+    display: inline-block;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim);
+    border: 1px solid var(--border-dark); border-radius: 999px;
+    padding: 3px 9px;
+    margin-top: 4px;
+  }
+  .carnet-saved-category-missing { color: #e0b060; border-color: rgba(224,176,96,0.4); }
   .carnet-saved-item:last-child { border-bottom: none; }
   .carnet-saved-name {
     font-family: 'Jost', sans-serif; font-weight: 400; font-size: 14px; color: var(--white);
@@ -1875,10 +1918,28 @@
   // API n'apparait jamais cote client). L'ajout/la liste/la suppression passent
   // directement par sb.from('pro_recommendations'), proteges par les RLS deja
   // en place (editeur de la fiche uniquement).
+  //
+  // category : memes 6 valeurs internes que partout ailleurs dans l'app
+  // (constants/categories.ts), verifiees en base par une contrainte CHECK
+  // (migration 073). Obligatoire pour toute nouvelle recommandation — un
+  // partenaire ne peut valider l'ajout d'un lieu sans en choisir une.
+  var CARNET_CATEGORIES = [
+    { id: 'restaurants', label: 'Restaurants' },
+    { id: 'bars', label: 'Bars' },
+    { id: 'coffee_shops', label: 'Coffee shops' },
+    { id: 'boutiques', label: 'Boutiques' },
+    { id: 'activities', label: 'Activités' },
+    { id: 'hotels', label: 'Hôtels' }
+  ];
+
+  function carnetCategoryLabel(id) {
+    var match = CARNET_CATEGORIES.filter(function (c) { return c.id === id; })[0];
+    return match ? match.label : null;
+  }
 
   function loadRecommendations() {
     sb.from('pro_recommendations')
-      .select('id, name, address, photo_url, created_at')
+      .select('id, name, address, photo_url, category, created_at')
       .eq('pro_profile_id', profile.id)
       .order('created_at', { ascending: false })
       .then(function (res) {
@@ -1917,6 +1978,11 @@
         addrEl.textContent = rec.address;
         textWrap.appendChild(addrEl);
       }
+      var categoryEl = document.createElement('div');
+      var categoryLabel = carnetCategoryLabel(rec.category);
+      categoryEl.className = 'carnet-saved-category' + (categoryLabel ? '' : ' carnet-saved-category-missing');
+      categoryEl.textContent = categoryLabel || 'Catégorie manquante';
+      textWrap.appendChild(categoryEl);
 
       var removeBtn = document.createElement('button');
       removeBtn.type = 'button';
@@ -2004,14 +2070,74 @@
 
       item.appendChild(textWrap);
       item.appendChild(addIcon);
-      item.addEventListener('click', function () { addRecommendation(r, item); });
+
+      // La categorie est choisie avant l'enregistrement definitif, dans un
+      // panneau replie sous le resultat cliquate (jamais deux ouverts a la
+      // fois, pour eviter d'encombrer la liste).
+      var categoryPanel = buildCarnetCategoryPanel(r, item);
+
+      item.addEventListener('click', function () {
+        if (categoryPanel.style.display === 'block') return;
+        container.querySelectorAll('.carnet-result-category').forEach(function (p) {
+          p.style.display = 'none';
+        });
+        categoryPanel.style.display = 'block';
+      });
+
       container.appendChild(item);
+      container.appendChild(categoryPanel);
     });
   }
 
-  function addRecommendation(result, itemEl) {
+  function buildCarnetCategoryPanel(result, itemEl) {
+    var panel = document.createElement('div');
+    panel.className = 'carnet-result-category';
+    panel.style.display = 'none';
+    panel.addEventListener('click', function (e) { e.stopPropagation(); });
+
+    var label = document.createElement('label');
+    label.textContent = 'Catégorie';
+    panel.appendChild(label);
+
+    var select = document.createElement('select');
+    var placeholderOpt = document.createElement('option');
+    placeholderOpt.value = '';
+    placeholderOpt.textContent = 'Choisir une catégorie…';
+    select.appendChild(placeholderOpt);
+    CARNET_CATEGORIES.forEach(function (c) {
+      var opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.label;
+      select.appendChild(opt);
+    });
+    panel.appendChild(select);
+
+    var errorEl = document.createElement('p');
+    errorEl.className = 'carnet-result-category-error';
+    errorEl.textContent = 'Choisis une catégorie pour continuer.';
+    panel.appendChild(errorEl);
+
+    var confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'btn-outline carnet-result-category-confirm';
+    confirmBtn.textContent = 'Ajouter au carnet';
+    confirmBtn.addEventListener('click', function () {
+      if (!select.value) {
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+      addRecommendation(result, itemEl, panel, select.value);
+    });
+    panel.appendChild(confirmBtn);
+
+    return panel;
+  }
+
+  function addRecommendation(result, itemEl, panelEl, category) {
     itemEl.style.opacity = '0.5';
     itemEl.style.pointerEvents = 'none';
+    panelEl.style.pointerEvents = 'none';
 
     function insertRow(photoUrl) {
       sb.from('pro_recommendations')
@@ -2022,7 +2148,8 @@
           address: result.address,
           lat: result.lat,
           lng: result.lng,
-          photo_url: photoUrl || null
+          photo_url: photoUrl || null,
+          category: category
         })
         .select()
         .single()
@@ -2034,6 +2161,7 @@
             statusEl.textContent = "Impossible d'ajouter ce lieu.";
             itemEl.style.opacity = '';
             itemEl.style.pointerEvents = '';
+            panelEl.style.pointerEvents = '';
             return;
           }
           recommendations.unshift(res.data);
