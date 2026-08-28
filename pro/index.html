@@ -1016,8 +1016,7 @@
 
             <div class="field" style="margin-bottom:0;">
               <label>QR code de présentation</label>
-              <a href="#" id="qrCodeDownloadBtn" class="btn-outline" target="_blank" rel="noopener" style="display:none;">Télécharger le QR code de présentation</a>
-              <p class="field-hint" id="qrCodeMissingHint" style="display:none;">QR code non encore disponible. Contactez contact@wenno.app.</p>
+              <a href="/assets/wenno-qrcode.png" class="btn-outline" target="_blank" rel="noopener">Télécharger le QR code de présentation</a>
               <p class="field-hint">Un flyer plus travaillé pour votre établissement vous sera fourni séparément.</p>
             </div>
           </div>
@@ -1311,17 +1310,6 @@
     } else {
       partnerCodeEl.textContent = '—';
       partnerCodeMissingHint.style.display = '';
-    }
-
-    var qrCodeDownloadBtn = document.getElementById('qrCodeDownloadBtn');
-    var qrCodeMissingHint = document.getElementById('qrCodeMissingHint');
-    if (profile.qr_code_image_url) {
-      qrCodeDownloadBtn.href = profile.qr_code_image_url;
-      qrCodeDownloadBtn.style.display = '';
-      qrCodeMissingHint.style.display = 'none';
-    } else {
-      qrCodeDownloadBtn.style.display = 'none';
-      qrCodeMissingHint.style.display = '';
     }
 
     document.getElementById('f-event_title').value = profile.event_title || '';
