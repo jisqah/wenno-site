@@ -849,6 +849,33 @@
         </div>
 
         <div class="panel-block">
+          <button type="button" class="panel-block-toggle" id="categoryBlockToggle" aria-expanded="false" aria-controls="categoryBlockContent">
+            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Catégorie établissement</p>
+          </button>
+          <div class="panel-block-content" id="categoryBlockContent">
+            <div class="field">
+              <label for="f-place_category">Catégorie</label>
+              <select id="f-place_category">
+                <option value="">Choisir une catégorie…</option>
+                <option value="restaurants">Restaurants</option>
+                <option value="bars">Bars</option>
+                <option value="coffee_shops">Coffee shops</option>
+                <option value="boutiques">Boutiques</option>
+                <option value="activities">Activités</option>
+                <option value="hotels">Hôtels</option>
+              </select>
+              <p class="field-hint">Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.</p>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>Code partenaire</label>
+              <div class="field-readonly-value" id="ro-partner_code">—</div>
+              <p class="field-hint" id="partnerCodeMissingHint" style="display:none;">Code établissement partenaire non encore configuré. Contactez contact@wenno.app.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-block">
           <p class="panel-block-title">Photo de couverture</p>
           <div class="field" style="margin-bottom:0;">
             <label for="f-cover_photo_url">Photo de couverture (URL)</label>
@@ -1265,6 +1292,17 @@
     document.getElementById('field-reservation_label').style.display = profile.reservation_url ? '' : 'none';
     document.getElementById('f-cover_photo_url').value = profile.cover_photo_url || '';
 
+    document.getElementById('f-place_category').value = profile.place_category || '';
+    var partnerCodeEl = document.getElementById('ro-partner_code');
+    var partnerCodeMissingHint = document.getElementById('partnerCodeMissingHint');
+    if (profile.partner_establishment_code) {
+      partnerCodeEl.textContent = profile.partner_establishment_code;
+      partnerCodeMissingHint.style.display = 'none';
+    } else {
+      partnerCodeEl.textContent = '—';
+      partnerCodeMissingHint.style.display = '';
+    }
+
     document.getElementById('f-event_title').value = profile.event_title || '';
     document.getElementById('f-event_description').value = profile.event_description || '';
     document.getElementById('f-event_start_date').value = toDatetimeLocalValue(profile.event_start_date);
@@ -1287,6 +1325,14 @@
       renderPreview();
       scheduleSave();
     });
+  });
+
+  // place_category est un select, pas un champ texte simple — ecoute dediee
+  // (evenement change, pas input) plutot que de l'ajouter au tableau
+  // generique ci-dessus.
+  document.getElementById('f-place_category').addEventListener('change', function (e) {
+    profile.place_category = e.target.value || null;
+    scheduleSave();
   });
 
   // reservation_label n'a de sens que si reservation_url est renseigne —
@@ -2228,6 +2274,7 @@
         // encore une ancienne valeur saisie precedemment.
         reservation_label: profile.reservation_url ? (profile.reservation_label || null) : null,
         cover_photo_url: profile.cover_photo_url,
+        place_category: profile.place_category || null,
         gallery_photos: profile.gallery_photos || [],
         menu_documents: profile.menu_documents || [],
         // Reste `null` tant que le partenaire n'a pas touche a la grille
@@ -2490,6 +2537,10 @@
   initCollapsibleBlock(
     document.getElementById('infoBlockToggle'),
     document.getElementById('infoBlockContent')
+  );
+  initCollapsibleBlock(
+    document.getElementById('categoryBlockToggle'),
+    document.getElementById('categoryBlockContent')
   );
   initCollapsibleBlock(
     document.getElementById('presentationBlockToggle'),
