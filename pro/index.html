@@ -849,33 +849,6 @@
         </div>
 
         <div class="panel-block">
-          <button type="button" class="panel-block-toggle" id="categoryBlockToggle" aria-expanded="false" aria-controls="categoryBlockContent">
-            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Catégorie établissement</p>
-          </button>
-          <div class="panel-block-content" id="categoryBlockContent">
-            <div class="field">
-              <label for="f-place_category">Catégorie</label>
-              <select id="f-place_category">
-                <option value="">Choisir une catégorie…</option>
-                <option value="restaurants">Restaurants</option>
-                <option value="bars">Bars</option>
-                <option value="coffee_shops">Coffee shops</option>
-                <option value="boutiques">Boutiques</option>
-                <option value="activities">Activités</option>
-                <option value="hotels">Hôtels</option>
-              </select>
-              <p class="field-hint">Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.</p>
-            </div>
-            <div class="field" style="margin-bottom:0;">
-              <label>Code partenaire</label>
-              <div class="field-readonly-value" id="ro-partner_code">—</div>
-              <p class="field-hint" id="partnerCodeMissingHint" style="display:none;">Code établissement partenaire non encore configuré. Contactez contact@wenno.app.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel-block">
           <p class="panel-block-title">Photo de couverture</p>
           <div class="field" style="margin-bottom:0;">
             <label for="f-cover_photo_url">Photo de couverture (URL)</label>
@@ -1010,6 +983,43 @@
 
             <div id="carnetSavedList" style="margin-top:24px;"></div>
             <p class="field-hint" id="carnetEmptyNote">Aucune recommandation ajoutée pour l'instant.</p>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <button type="button" class="panel-block-toggle" id="categoryBlockToggle" aria-expanded="false" aria-controls="categoryBlockContent">
+            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">wenno x vous</p>
+          </button>
+          <div class="panel-block-content" id="categoryBlockContent">
+            <p class="carnet-intro">Partagez un QR code à votre clientèle afin qu'ils puissent télécharger l'application et profiter de vos actualités immédiatement.</p>
+
+            <div class="field">
+              <label for="f-place_category">Catégorie</label>
+              <select id="f-place_category">
+                <option value="">Choisir une catégorie…</option>
+                <option value="restaurants">Restaurants</option>
+                <option value="bars">Bars</option>
+                <option value="coffee_shops">Coffee shops</option>
+                <option value="boutiques">Boutiques</option>
+                <option value="activities">Activités</option>
+                <option value="hotels">Hôtels</option>
+              </select>
+              <p class="field-hint">Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.</p>
+            </div>
+
+            <div class="field">
+              <label>Code partenaire</label>
+              <div class="field-readonly-value" id="ro-partner_code">—</div>
+              <p class="field-hint" id="partnerCodeMissingHint" style="display:none;">Code établissement partenaire non encore configuré. Contactez contact@wenno.app.</p>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label>QR code de présentation</label>
+              <a href="#" id="qrCodeDownloadBtn" class="btn-outline" target="_blank" rel="noopener" style="display:none;">Télécharger le QR code de présentation</a>
+              <p class="field-hint" id="qrCodeMissingHint" style="display:none;">QR code non encore disponible. Contactez contact@wenno.app.</p>
+              <p class="field-hint">Un flyer plus travaillé pour votre établissement vous sera fourni séparément.</p>
+            </div>
           </div>
         </div>
 
@@ -1301,6 +1311,17 @@
     } else {
       partnerCodeEl.textContent = '—';
       partnerCodeMissingHint.style.display = '';
+    }
+
+    var qrCodeDownloadBtn = document.getElementById('qrCodeDownloadBtn');
+    var qrCodeMissingHint = document.getElementById('qrCodeMissingHint');
+    if (profile.qr_code_image_url) {
+      qrCodeDownloadBtn.href = profile.qr_code_image_url;
+      qrCodeDownloadBtn.style.display = '';
+      qrCodeMissingHint.style.display = 'none';
+    } else {
+      qrCodeDownloadBtn.style.display = 'none';
+      qrCodeMissingHint.style.display = '';
     }
 
     document.getElementById('f-event_title').value = profile.event_title || '';
