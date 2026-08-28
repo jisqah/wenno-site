@@ -899,6 +899,28 @@
         </div>
 
         <div class="panel-block">
+          <button type="button" class="panel-block-toggle" id="galleryBlockToggle" aria-expanded="false" aria-controls="galleryBlockContent">
+            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Galerie photos</p>
+          </button>
+          <div class="panel-block-content" id="galleryBlockContent">
+            <div id="galleryList"></div>
+            <button type="button" class="btn-add" id="addGalleryPhoto">+ Ajouter une photo</button>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <button type="button" class="panel-block-toggle" id="menuBlockToggle" aria-expanded="false" aria-controls="menuBlockContent">
+            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <p class="panel-block-title">Menu</p>
+          </button>
+          <div class="panel-block-content" id="menuBlockContent">
+            <div id="menuList"></div>
+            <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
+          </div>
+        </div>
+
+        <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="eventBlockToggle" aria-expanded="false" aria-controls="eventBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             <p class="panel-block-title">Évènement</p>
@@ -937,28 +959,6 @@
               <p class="field-hint">Optionnel — programmez l'envoi d'une notification push aux utilisateurs ayant ce lieu en favori.</p>
               <p class="field-hint" id="eventNotifySentStatus" style="display:none;"></p>
             </div>
-          </div>
-        </div>
-
-        <div class="panel-block">
-          <button type="button" class="panel-block-toggle" id="galleryBlockToggle" aria-expanded="false" aria-controls="galleryBlockContent">
-            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Galerie photos</p>
-          </button>
-          <div class="panel-block-content" id="galleryBlockContent">
-            <div id="galleryList"></div>
-            <button type="button" class="btn-add" id="addGalleryPhoto">+ Ajouter une photo</button>
-          </div>
-        </div>
-
-        <div class="panel-block">
-          <button type="button" class="panel-block-toggle" id="menuBlockToggle" aria-expanded="false" aria-controls="menuBlockContent">
-            <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Menu</p>
-          </button>
-          <div class="panel-block-content" id="menuBlockContent">
-            <div id="menuList"></div>
-            <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
           </div>
         </div>
 
