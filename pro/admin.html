@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>wenno pro — Administration</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400;600&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --border-dark: rgba(255,255,255,0.12);
+    --text-dim: rgba(255,255,255,0.55);
+    --text-dimmer: rgba(255,255,255,0.35);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  /* NAV — repris tel quel de pro/index.html */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .nav-logo { display: flex; align-items: center; text-decoration: none; }
+  .nav-logo-img { height: 22px; width: auto; }
+  .nav-tag {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .nav-signout {
+    background: none; border: 1px solid var(--border-dark);
+    color: var(--text-dim); font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px 16px; border-radius: 40px; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .nav-signout:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* CENTERED screens — repris de pro/index.html (.center-screen etc.) */
+  .center-screen {
+    min-height: calc(100vh - 73px);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 40px 24px;
+  }
+  .center-box { max-width: 460px; width: 100%; }
+  .center-eyebrow {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 200;
+    font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 20px;
+  }
+  .center-title {
+    font-family: 'Josefin Sans', sans-serif; font-weight: 100;
+    font-size: clamp(28px, 4vw, 38px);
+    letter-spacing: 0.01em; line-height: 1.15;
+    margin-bottom: 18px;
+  }
+  .center-desc {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 15px; line-height: 1.7; color: var(--text-dim);
+    margin-bottom: 36px;
+  }
+
+  /* FORM ELEMENTS — repris de pro/index.html (.field) */
+  .field { margin-bottom: 20px; text-align: left; }
+  .field label {
+    display: block;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .field input[type="email"],
+  .field input[type="text"],
+  .field select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field select { color-scheme: dark; cursor: pointer; }
+  .field input:focus, .field select:focus {
+    outline: none; border-color: rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .btn-primary {
+    display: inline-block; width: 100%;
+    padding: 15px 24px;
+    background: var(--white); color: var(--black);
+    border: none; border-radius: 60px;
+    font-family: 'Josefin Sans', sans-serif; font-weight: 400;
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+  .form-error { font-size: 13px; color: #ff8a8a; margin-top: 14px; text-align: left; }
+  .form-success { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+  /* Resultat de l'action admin — succes/erreur, distinct de .form-error/
+     .form-success (celles-la concernent le formulaire de connexion) */
+  .result-box {
+    margin-top: 20px; padding: 14px 16px;
+    border-radius: 10px; text-align: left;
+    font-size: 14px; line-height: 1.6;
+    border: 1px solid var(--border-dark);
+  }
+  .result-box.success { border-color: rgba(126,217,150,0.35); background: rgba(126,217,150,0.06); }
+  .result-box.error { border-color: rgba(255,138,138,0.35); background: rgba(255,138,138,0.06); color: #ff8a8a; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/assets/wenno_logo_blanc.png" alt="wenno" class="nav-logo-img">
+  </a>
+  <span class="nav-tag">Administration</span>
+  <button class="nav-signout" id="signOutBtn" style="display:none;">Déconnexion</button>
+</nav>
+
+<main>
+
+  <!-- LOADING -->
+  <div class="center-screen" id="screen-loading">
+    <div class="center-box">
+      <p class="form-success">Chargement…</p>
+    </div>
+  </div>
+
+  <!-- LOGIN — meme flow OTP que pro/index.html (memes ids, memes handlers) -->
+  <div class="center-screen" id="screen-login">
+    <div class="center-box">
+      <p class="center-eyebrow">Administration</p>
+      <h1 class="center-title">Accès admin wenno</h1>
+      <p class="center-desc">Connecte-toi avec ton adresse email administrateur.</p>
+
+      <form id="loginForm">
+        <div class="field" style="text-align:left;">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="email" placeholder="toi@exemple.com">
+        </div>
+        <button type="submit" class="btn-primary" id="loginSubmitBtn">Recevoir mon code de connexion</button>
+        <p class="form-error" id="loginError" style="display:none;"></p>
+      </form>
+
+      <div id="loginSuccess" style="display:none;">
+        <p class="form-success">Un code de connexion vient d'être envoyé par email. Vérifie ta boîte mail (et tes spams) et saisis-le ci-dessous.</p>
+        <form id="otpForm">
+          <div class="field" style="text-align:left;">
+            <label for="otpCode">Code reçu par email</label>
+            <input type="text" id="otpCode" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="12345678" required>
+          </div>
+          <button type="submit" class="btn-primary" id="otpSubmitBtn">Vérifier le code</button>
+          <p class="form-error" id="otpError" style="display:none;"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCES REFUSE -->
+  <div class="center-screen" id="screen-denied">
+    <div class="center-box">
+      <p class="center-eyebrow">Administration</p>
+      <h1 class="center-title">Accès refusé</h1>
+      <p class="center-desc">Ce compte n'a pas les droits administrateur.</p>
+    </div>
+  </div>
+
+  <!-- FORMULAIRE ADMIN -->
+  <div class="center-screen" id="screen-admin">
+    <div class="center-box">
+      <p class="center-eyebrow">Administration</p>
+      <h1 class="center-title">Donner accès à une fiche pro</h1>
+      <p class="center-desc">Crée le compte du client (s'il n'existe pas déjà) et le lie à sa fiche établissement, en un seul clic — il n'aura plus qu'à se connecter une fois avec cet email.</p>
+
+      <form id="adminForm">
+        <div class="field">
+          <label for="adminEmail">Email du client</label>
+          <input type="email" id="adminEmail" required autocomplete="off" placeholder="client@exemple.com">
+        </div>
+        <div class="field">
+          <label for="adminProProfile">Fiche établissement</label>
+          <select id="adminProProfile" required>
+            <option value="">Chargement…</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary" id="adminSubmitBtn">Ajouter</button>
+      </form>
+
+      <div class="result-box" id="adminResult" style="display:none;"></div>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---- Config ----------------------------------------------------------
+  // Meme projet, meme cle publique que pro/index.html : securisee par RLS,
+  // jamais la service_role key (celle-la ne vit que dans l'Edge Function
+  // admin-create-pro-editor, cote serveur).
+  var SUPABASE_URL = 'https://tefngqjhyjyqpvvarubk.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_uzc_pZM7fiRBp5RXFz4m1Q_qbt-lNRS';
+
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  });
+
+  var otpEmail = '';
+
+  // ---- Ecrans --------------------------------------------------------------
+  var screens = ['loading', 'login', 'denied', 'admin'];
+  function showScreen(name) {
+    screens.forEach(function (s) {
+      document.getElementById('screen-' + s).style.display = (s === name) ? '' : 'none';
+    });
+    document.getElementById('signOutBtn').style.display = (name === 'denied' || name === 'admin') ? 'inline-block' : 'none';
+  }
+  showScreen('loading');
+
+  // ---- Auth — flow OTP identique a pro/index.html ---------------------------
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('loginEmail').value.trim();
+    var btn = document.getElementById('loginSubmitBtn');
+    var errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+
+    sb.auth.signInWithOtp({
+      email: email,
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
+    }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Recevoir mon code de connexion';
+      if (res.error) {
+        errEl.textContent = "Impossible d'envoyer le code. Vérifie l'adresse et réessaie.";
+        errEl.style.display = 'block';
+        return;
+      }
+      otpEmail = email;
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('loginSuccess').style.display = 'block';
+    });
+  });
+
+  document.getElementById('otpForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var code = document.getElementById('otpCode').value.trim();
+    var btn = document.getElementById('otpSubmitBtn');
+    var errEl = document.getElementById('otpError');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Vérification…';
+
+    sb.auth.verifyOtp({ email: otpEmail, token: code, type: 'email' }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Vérifier le code';
+      if (res.error) {
+        errEl.textContent = 'Code invalide ou expiré, réessaie ou redemande un code.';
+        errEl.style.display = 'block';
+        return;
+      }
+      // Succes : onAuthStateChange -> SIGNED_IN -> onAuthenticated prend le relais.
+    });
+  });
+
+  document.getElementById('signOutBtn').addEventListener('click', function () {
+    sb.auth.signOut().then(function () { window.location.reload(); });
+  });
+
+  function init() {
+    sb.auth.getSession().then(function (res) {
+      var session = res.data && res.data.session;
+      if (session) { onAuthenticated(session.user); }
+      else { showScreen('login'); }
+    });
+
+    sb.auth.onAuthStateChange(function (event, session) {
+      if (event === 'SIGNED_IN' && session) { onAuthenticated(session.user); }
+      if (event === 'SIGNED_OUT') { showScreen('login'); }
+    });
+  }
+
+  // ---- Verification is_admin + chargement du formulaire ---------------------
+  function onAuthenticated(user) {
+    showScreen('loading');
+    sb.from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(function (res) {
+        if (res.error || !res.data || res.data.is_admin !== true) {
+          showScreen('denied');
+          return;
+        }
+        loadProProfiles(function () { showScreen('admin'); });
+      });
+  }
+
+  function loadProProfiles(cb) {
+    var select = document.getElementById('adminProProfile');
+    sb.from('pro_profiles')
+      .select('id, business_name')
+      .order('business_name', { ascending: true })
+      .then(function (res) {
+        select.innerHTML = '';
+        if (res.error || !res.data || res.data.length === 0) {
+          var opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'Aucune fiche disponible';
+          select.appendChild(opt);
+          cb();
+          return;
+        }
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Choisir une fiche…';
+        select.appendChild(placeholder);
+        res.data.forEach(function (p) {
+          var opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.business_name || p.id;
+          select.appendChild(opt);
+        });
+        cb();
+      });
+  }
+
+  // ---- Soumission du formulaire admin ----------------------------------------
+  function showResult(kind, message) {
+    var box = document.getElementById('adminResult');
+    box.className = 'result-box ' + kind;
+    box.textContent = message;
+    box.style.display = 'block';
+  }
+
+  document.getElementById('adminForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('adminEmail').value.trim();
+    var proProfileId = document.getElementById('adminProProfile').value;
+    var btn = document.getElementById('adminSubmitBtn');
+    var resultBox = document.getElementById('adminResult');
+    resultBox.style.display = 'none';
+
+    if (!proProfileId) {
+      showResult('error', 'Choisis une fiche établissement.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Ajout…';
+
+    // functions.invoke attache automatiquement le token de la session
+    // courante (meme client sb que la connexion OTP ci-dessus) — pas besoin
+    // de recuperer access_token manuellement.
+    sb.functions.invoke('admin-create-pro-editor', {
+      body: { email: email, pro_profile_id: proProfileId }
+    }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Ajouter';
+
+      if (res.error) {
+        // FunctionsHttpError expose le corps JSON renvoye par la fonction
+        // via error.context (Response) — on l'utilise pour un message
+        // precis plutot qu'une erreur generique.
+        if (res.error.context && typeof res.error.context.json === 'function') {
+          res.error.context.json().then(function (body) {
+            showResult('error', (body && body.error) || 'Une erreur est survenue.');
+          }).catch(function () {
+            showResult('error', 'Une erreur est survenue.');
+          });
+        } else {
+          showResult('error', 'Une erreur est survenue. Vérifie ta connexion et réessaie.');
+        }
+        return;
+      }
+
+      var data = res.data || {};
+      var businessName = data.business_name || 'cette fiche';
+      var parts = [];
+      parts.push(data.created_new_user ? 'Compte créé pour ' + email + '.' : 'Compte existant réutilisé pour ' + email + '.');
+      parts.push(data.already_linked ? 'Déjà lié à "' + businessName + '".' : 'Lié à "' + businessName + '".');
+      showResult('success', parts.join(' ') + ' Le client peut maintenant se connecter avec cet email sur wenno.app/pro.');
+
+      document.getElementById('adminEmail').value = '';
+      document.getElementById('adminProProfile').value = '';
+    });
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
