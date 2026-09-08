@@ -480,6 +480,14 @@
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 14px;
     color-scheme: dark; cursor: pointer;
   }
+  /* La liste deroulante ouverte est rendue par le navigateur avec un fond
+     clair natif (color-scheme: dark n'est pas fiable sur cette popup selon
+     navigateur/OS) - texte des options force en sombre (meme convention que
+     .btn-primary : texte fonce sur fond clair) pour rester lisible, sans
+     toucher a color: var(--white) du select ferme lui-meme. */
+  .carnet-result-category select option {
+    color: var(--black);
+  }
   .carnet-result-category-error {
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px;
     color: #e08080; margin-top: 8px; display: none;
