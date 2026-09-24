@@ -1012,6 +1012,8 @@
                 <option value="boutiques">Boutiques</option>
                 <option value="activities">Activités</option>
                 <option value="hotels">Hôtels</option>
+                <option value="services">Services</option>
+                <option value="sante">Santé</option>
               </select>
               <p class="field-hint">Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.</p>
             </div>
@@ -1982,17 +1984,20 @@
   // directement par sb.from('pro_recommendations'), proteges par les RLS deja
   // en place (editeur de la fiche uniquement).
   //
-  // category : memes 6 valeurs internes que partout ailleurs dans l'app
+  // category : memes 8 valeurs internes que partout ailleurs dans l'app
   // (constants/categories.ts), verifiees en base par une contrainte CHECK
-  // (migration 073). Obligatoire pour toute nouvelle recommandation — un
-  // partenaire ne peut valider l'ajout d'un lieu sans en choisir une.
+  // (migration 073, etendue pour Services/Sante). Obligatoire pour toute
+  // nouvelle recommandation — un partenaire ne peut valider l'ajout d'un
+  // lieu sans en choisir une.
   var CARNET_CATEGORIES = [
     { id: 'restaurants', label: 'Restaurants' },
     { id: 'bars', label: 'Bars' },
     { id: 'coffee_shops', label: 'Coffee shops' },
     { id: 'boutiques', label: 'Boutiques' },
     { id: 'activities', label: 'Activités' },
-    { id: 'hotels', label: 'Hôtels' }
+    { id: 'hotels', label: 'Hôtels' },
+    { id: 'services', label: 'Services' },
+    { id: 'sante', label: 'Santé' }
   ];
 
   function carnetCategoryLabel(id) {
