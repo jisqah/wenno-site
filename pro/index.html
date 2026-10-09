@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>wenno pro — Gérer ma fiche</title>
+<title>wenno pro | Gérer ma fiche</title>
 <link rel="icon" type="image/png" href="/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400;600&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
 <style>
@@ -56,6 +56,16 @@
   }
   .nav-signout:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
   .nav-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .lang-switch { display: flex; gap: 4px; }
+  .lang-btn {
+    background: none; border: 1px solid var(--border-dark);
+    color: var(--text-dim); font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 40px; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .lang-btn:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+  .lang-btn.active { color: var(--white); border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.06); }
 
   main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
@@ -115,23 +125,33 @@
     background: rgba(255,255,255,0.06);
   }
   .field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-  .field input[type="file"] {
-    width: 100%;
-    color: var(--text-dim);
-    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px;
-    padding: 10px 0;
+  /* Bouton de fichier personnalise (remplace le <input type="file"> natif,
+     dont le texte "Choisir un fichier / Aucun fichier choisi" depend de la
+     langue du navigateur et ignore le bouton FR/EN de la page). L'input
+     reste dans le flux (focusable, lisible par un lecteur d'ecran), juste
+     masque visuellement — jamais display:none. */
+  .file-input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .file-input-native {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
   }
-  .field input[type="file"]::file-selector-button {
+  .file-input-btn {
+    display: inline-block;
     background: rgba(255,255,255,0.06);
     border: 1px solid var(--border-dark);
     border-radius: 8px;
     color: var(--white);
     font-family: 'Jost', sans-serif; font-weight: 300; font-size: 12px;
     padding: 8px 14px;
-    margin-right: 10px;
     cursor: pointer;
   }
-  .field input[type="file"]:disabled { opacity: 0.5; }
+  .file-input-btn:hover { border-color: rgba(255,255,255,0.4); }
+  .file-input-native:disabled + .file-input-btn { opacity: 0.5; cursor: default; }
+  .file-input-native:focus-visible + .file-input-btn { outline: 2px solid rgba(255,255,255,0.45); outline-offset: 2px; }
+  .file-input-name {
+    color: var(--text-dim);
+    font-family: 'Jost', sans-serif; font-weight: 300; font-size: 13px;
+  }
   .field-readonly-value {
     padding: 13px 16px;
     background: rgba(255,255,255,0.02);
@@ -741,18 +761,22 @@
   <a href="/" class="nav-logo">
     <img src="/assets/wenno_logo_blanc.png" alt="wenno" class="nav-logo-img">
   </a>
-  <span class="nav-tag">Espace partenaire</span>
+  <span class="nav-tag" data-i18n="navTag">Espace partenaire</span>
   <div class="nav-right">
-    <a href="mailto:contact@wenno.app" class="help-link" id="navHelpLink" style="display:none;">Besoin d'aide ?</a>
-    <button class="nav-signout" id="signOutBtn" style="display:none;">Déconnexion</button>
+    <a href="mailto:contact@wenno.app" class="help-link" id="navHelpLink" data-i18n="helpLink" style="display:none;">Besoin d'aide ?</a>
+    <div class="lang-switch" role="group" aria-label="Langue / Language">
+      <button type="button" class="lang-btn" id="langFrBtn" aria-pressed="true">FR</button>
+      <button type="button" class="lang-btn" id="langEnBtn" aria-pressed="false">EN</button>
+    </div>
+    <button class="nav-signout" id="signOutBtn" data-i18n="signOut" style="display:none;">Déconnexion</button>
   </div>
 </nav>
 
 <div class="save-toast" id="saveToast" role="status" aria-live="polite">
   <span class="save-toast-dot"></span>
   <div>
-    <p class="save-toast-title">Modifications enregistrées</p>
-    <p class="save-toast-subtitle">Visibles dans l'application Wenno sous quelques minutes.</p>
+    <p class="save-toast-title" data-i18n="saveToastTitle">Modifications enregistrées</p>
+    <p class="save-toast-subtitle" data-i18n="saveToastSubtitle">Visibles dans l'application Wenno sous quelques minutes.</p>
   </div>
 </div>
 
@@ -765,47 +789,47 @@
   <!-- LOADING -->
   <div class="center-screen" id="screen-loading">
     <div class="center-box">
-      <p class="form-success">Chargement…</p>
+      <p class="form-success" data-i18n="loading">Chargement…</p>
     </div>
   </div>
 
   <!-- LOGIN -->
   <div class="center-screen" id="screen-login">
     <div class="center-box">
-      <p class="center-eyebrow">Espace partenaire</p>
-      <h1 class="center-title">Gérer ma fiche wenno</h1>
-      <p class="center-desc">Connecte-toi avec l'adresse email associée à ton partenariat pour modifier ta fiche.</p>
+      <p class="center-eyebrow" data-i18n="navTag">Espace partenaire</p>
+      <h1 class="center-title" data-i18n="loginTitle">Gérer ma fiche wenno</h1>
+      <p class="center-desc" data-i18n="loginDesc">Connectez-vous avec l'adresse email associée à votre partenariat pour modifier votre fiche.</p>
 
       <form id="loginForm">
         <div class="field" style="text-align:left;">
-          <label for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" required autocomplete="email" placeholder="toi@exemple.com">
+          <label for="loginEmail" data-i18n="emailLabel">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="email" data-i18n-placeholder="emailPlaceholder" placeholder="vous@exemple.com">
         </div>
-        <button type="submit" class="btn-primary" id="loginSubmitBtn">Recevoir mon code de connexion</button>
+        <button type="submit" class="btn-primary" id="loginSubmitBtn" data-i18n="loginSubmitBtn">Recevoir mon code de connexion</button>
         <p class="form-error" id="loginError" style="display:none;"></p>
       </form>
 
       <div id="loginSuccess" style="display:none;">
-        <p class="form-success">Un code de connexion vient d'être envoyé par email. Vérifie ta boîte mail (et tes spams) et saisis-le ci-dessous.</p>
+        <p class="form-success" data-i18n="loginSuccess">Un code de connexion vient d'être envoyé par email. Vérifiez votre boîte mail (et vos spams) et saisissez-le ci-dessous.</p>
         <form id="otpForm">
           <div class="field" style="text-align:left;">
-            <label for="otpCode">Code reçu par email</label>
+            <label for="otpCode" data-i18n="otpLabel">Code reçu par email</label>
             <input type="text" id="otpCode" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="12345678" required>
           </div>
-          <button type="submit" class="btn-primary" id="otpSubmitBtn">Vérifier le code</button>
+          <button type="submit" class="btn-primary" id="otpSubmitBtn" data-i18n="otpSubmitBtn">Vérifier le code</button>
           <p class="form-error" id="otpError" style="display:none;"></p>
         </form>
       </div>
     </div>
-    <a href="mailto:contact@wenno.app" class="help-link help-link--fixed">Besoin d'aide ?</a>
+    <a href="mailto:contact@wenno.app" class="help-link help-link--fixed" data-i18n="helpLink">Besoin d'aide ?</a>
   </div>
 
   <!-- NO PROFILE -->
   <div class="center-screen" id="screen-none">
     <div class="center-box">
-      <p class="center-eyebrow">Espace partenaire</p>
-      <h1 class="center-title">Aucune fiche associée</h1>
-      <p class="center-desc">Aucune fiche ne vous est associée pour l'instant, contactez l'équipe Wenno.</p>
+      <p class="center-eyebrow" data-i18n="navTag">Espace partenaire</p>
+      <h1 class="center-title" data-i18n="noneTitle">Aucune fiche associée</h1>
+      <p class="center-desc" data-i18n="noneDesc">Aucune fiche ne vous est associée pour l'instant, contactez l'équipe Wenno.</p>
       <a href="mailto:contact@wenno.app" class="btn-outline">contact@wenno.app</a>
     </div>
   </div>
@@ -813,11 +837,11 @@
   <!-- PICKER (plusieurs fiches) -->
   <div class="center-screen" id="screen-picker">
     <div class="center-box" style="max-width: 520px;">
-      <p class="center-eyebrow">Espace partenaire</p>
-      <h1 class="center-title">Choisissez un établissement</h1>
+      <p class="center-eyebrow" data-i18n="navTag">Espace partenaire</p>
+      <h1 class="center-title" data-i18n="pickerTitle">Choisissez un établissement</h1>
       <div class="picker-list" id="pickerList"></div>
     </div>
-    <a href="mailto:contact@wenno.app" class="help-link help-link--fixed">Besoin d'aide ?</a>
+    <a href="mailto:contact@wenno.app" class="help-link help-link--fixed" data-i18n="helpLink">Besoin d'aide ?</a>
   </div>
 
   <!-- EDITOR -->
@@ -835,44 +859,44 @@
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="infoBlockToggle" aria-expanded="false" aria-controls="infoBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Informations établissement</p>
+            <p class="panel-block-title" data-i18n="infoTitle">Informations établissement</p>
           </button>
           <div class="panel-block-content" id="infoBlockContent">
             <div class="readonly-grid">
               <div>
-                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Nom</label>
+                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;" data-i18n="nameLabel">Nom</label>
                 <div class="field-readonly-value" id="ro-business_name">—</div>
               </div>
               <div>
-                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Adresse</label>
+                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;" data-i18n="addressLabel">Adresse</label>
                 <div class="field-readonly-value" id="ro-address">—</div>
               </div>
               <div>
-                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Téléphone</label>
+                <label style="display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;" data-i18n="phoneLabel">Téléphone</label>
                 <div class="field-readonly-value" id="ro-phone">—</div>
               </div>
             </div>
-            <p class="field-hint">Une erreur sur ces informations ? Écris à contact@wenno.app.</p>
+            <p class="field-hint" data-i18n="infoHint">Une erreur sur ces informations ? Écrivez à contact@wenno.app.</p>
           </div>
         </div>
 
         <div class="panel-block">
-          <p class="panel-block-title">Photo de couverture</p>
+          <p class="panel-block-title" data-i18n="coverTitle">Photo de couverture</p>
           <div class="field" style="margin-bottom:0;">
-            <label for="f-cover_photo_url">Photo de couverture (URL)</label>
-            <input type="url" id="f-cover_photo_url" placeholder="https://…">
+            <label for="f-cover_photo_url" data-i18n="coverLabel">Photo de couverture (URL)</label>
+            <input type="url" id="f-cover_photo_url" data-i18n-placeholder="urlPlaceholder" placeholder="https://…">
           </div>
         </div>
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="presentationBlockToggle" aria-expanded="false" aria-controls="presentationBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Présentation</p>
+            <p class="panel-block-title" data-i18n="presentationTitle">Présentation</p>
           </button>
           <div class="panel-block-content" id="presentationBlockContent">
             <div class="field" style="margin-bottom:0;">
-              <label for="f-description">Description</label>
-              <textarea id="f-description" placeholder="Présente ton lieu en quelques phrases…"></textarea>
+              <label for="f-description" data-i18n="descriptionLabel">Description</label>
+              <textarea id="f-description" data-i18n-placeholder="descriptionPlaceholder" placeholder="Présentez votre lieu en quelques phrases…"></textarea>
             </div>
           </div>
         </div>
@@ -880,28 +904,28 @@
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="hoursBlockToggle" aria-expanded="false" aria-controls="hoursBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Horaires</p>
+            <p class="panel-block-title" data-i18n="hoursTitle">Horaires</p>
           </button>
           <div class="panel-block-content" id="hoursBlockContent">
             <div class="field">
-              <label>Horaires</label>
-              <p class="field-hint" style="margin-top:0; margin-bottom:14px;">Tous les jours sont fermés par défaut. Décochez les jours d'ouverture et indiquez les horaires de chaque service.</p>
+              <label data-i18n="hoursFieldLabel">Horaires</label>
+              <p class="field-hint" data-i18n="hoursIntroHint" style="margin-top:0; margin-bottom:14px;">Tous les jours sont fermés par défaut. Décochez les jours d'ouverture et indiquez les horaires de chaque service.</p>
               <div id="hoursGrid"></div>
-              <p class="field-hint">Coche « Fermé ce jour » pour un jour sans ouverture. Ajoute plusieurs services pour une coupure déjeuner / dîner.</p>
+              <p class="field-hint" data-i18n="hoursCheckHint">Cochez « Fermé ce jour » pour un jour sans ouverture. Ajoutez plusieurs services pour une coupure déjeuner / dîner.</p>
             </div>
             <div class="field">
-              <label for="f-hours">Précisions complémentaires (optionnel)</label>
-              <textarea id="f-hours" placeholder="Ex: cuisine fermée dès 22h, jours fériés, etc." style="min-height: 70px;"></textarea>
-              <p class="field-hint">Réservez cet espace à des précisions ponctuelles : jours fériés, fermeture exceptionnelle, horaires d'été, etc.</p>
+              <label for="f-hours" data-i18n="hoursExtraLabel">Précisions complémentaires (optionnel)</label>
+              <textarea id="f-hours" data-i18n-placeholder="hoursExtraPlaceholder" placeholder="Ex: cuisine fermée dès 22h, jours fériés, etc." style="min-height: 70px;"></textarea>
+              <p class="field-hint" data-i18n="hoursExtraHint">Réservez cet espace à des précisions ponctuelles : jours fériés, fermeture exceptionnelle, horaires d'été, etc.</p>
             </div>
             <div class="field">
-              <label for="f-reservation_url">Lien de réservation (optionnel)</label>
-              <input type="url" id="f-reservation_url" placeholder="https://…">
-              <p class="field-hint">Lien TheFork, OpenTable, ton site, ou autre.</p>
+              <label for="f-reservation_url" data-i18n="reservationUrlLabel">Lien de réservation (optionnel)</label>
+              <input type="url" id="f-reservation_url" data-i18n-placeholder="urlPlaceholder" placeholder="https://…">
+              <p class="field-hint" data-i18n="reservationUrlHint">Lien TheFork, OpenTable, votre site, ou autre.</p>
             </div>
             <div class="field" id="field-reservation_label" style="margin-bottom:0; display:none;">
-              <label for="f-reservation_label">Précision (optionnel)</label>
-              <input type="text" id="f-reservation_label" placeholder="ex: Réserver une chambre, Réserver une table...">
+              <label for="f-reservation_label" data-i18n="reservationLabelLabel">Précision (optionnel)</label>
+              <input type="text" id="f-reservation_label" data-i18n-placeholder="reservationLabelPlaceholder" placeholder="ex: Réserver une chambre, Réserver une table...">
             </div>
           </div>
         </div>
@@ -909,62 +933,66 @@
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="galleryBlockToggle" aria-expanded="false" aria-controls="galleryBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Galerie photos</p>
+            <p class="panel-block-title" data-i18n="galleryTitle">Galerie photos</p>
           </button>
           <div class="panel-block-content" id="galleryBlockContent">
             <div id="galleryList"></div>
-            <button type="button" class="btn-add" id="addGalleryPhoto">+ Ajouter une photo</button>
+            <button type="button" class="btn-add" id="addGalleryPhoto" data-i18n="addPhotoBtn">+ Ajouter une photo</button>
           </div>
         </div>
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="menuBlockToggle" aria-expanded="false" aria-controls="menuBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Menu</p>
+            <p class="panel-block-title" data-i18n="menuTitle">Menu</p>
           </button>
           <div class="panel-block-content" id="menuBlockContent">
             <div id="menuList"></div>
-            <button type="button" class="btn-add" id="addMenuItem">+ Ajouter un document</button>
+            <button type="button" class="btn-add" id="addMenuItem" data-i18n="addMenuBtn">+ Ajouter un document</button>
           </div>
         </div>
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="eventBlockToggle" aria-expanded="false" aria-controls="eventBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Évènement</p>
+            <p class="panel-block-title" data-i18n="eventTitle">Évènement</p>
           </button>
           <div class="panel-block-content" id="eventBlockContent">
             <div class="field">
-              <label for="f-event_title">Titre</label>
-              <input type="text" id="f-event_title" placeholder="Soirée DJ, Menu de Noël...">
+              <label for="f-event_title" data-i18n="eventTitleLabel">Titre</label>
+              <input type="text" id="f-event_title" data-i18n-placeholder="eventTitlePlaceholder" placeholder="Soirée DJ, Menu de Noël...">
             </div>
             <div class="field">
-              <label for="f-event_description">Description</label>
-              <textarea id="f-event_description" placeholder="Décris ton évènement en quelques phrases…"></textarea>
+              <label for="f-event_description" data-i18n="descriptionLabel">Description</label>
+              <textarea id="f-event_description" data-i18n-placeholder="eventDescPlaceholder" placeholder="Décrivez votre évènement en quelques phrases…"></textarea>
             </div>
             <div class="field">
-              <label for="f-event_photo">Photo</label>
+              <label for="f-event_photo" data-i18n="eventPhotoLabel">Photo</label>
               <div id="eventPhotoPreviewWrap" style="display:none; margin-bottom:12px;">
-                <img id="eventPhotoPreviewImg" alt="Photo évènement" style="width:120px; height:120px; object-fit:cover; border-radius:12px; display:block; margin-bottom:8px; background: rgba(255,255,255,0.04);">
-                <button type="button" class="btn-outline" id="removeEventPhoto">Retirer la photo</button>
+                <img id="eventPhotoPreviewImg" data-i18n-alt="eventPhotoAlt" alt="Photo évènement" style="width:120px; height:120px; object-fit:cover; border-radius:12px; display:block; margin-bottom:8px; background: rgba(255,255,255,0.04);">
+                <button type="button" class="btn-outline" id="removeEventPhoto" data-i18n="removeEventPhotoBtn">Retirer la photo</button>
               </div>
-              <input type="file" id="f-event_photo" accept="image/jpeg,image/png,image/webp">
+              <div class="file-input-row">
+                <input type="file" id="f-event_photo" class="file-input-native" accept="image/jpeg,image/png,image/webp">
+                <label for="f-event_photo" class="file-input-btn" data-i18n="chooseFileBtn">Choisir un fichier</label>
+                <span class="file-input-name" id="eventPhotoFileName" data-i18n="noFileChosen">Aucun fichier choisi</span>
+              </div>
               <p class="field-hint" id="eventPhotoStatus" style="display:none;"></p>
-              <p class="field-hint">JPEG, PNG ou WEBP, 5 Mo maximum.</p>
+              <p class="field-hint" data-i18n="eventPhotoHint">JPEG, PNG ou WEBP, 5 Mo maximum.</p>
             </div>
             <div class="field">
-              <label for="f-event_start_date">Date de début (optionnel)</label>
+              <label for="f-event_start_date" data-i18n="eventStartLabel">Date de début (optionnel)</label>
               <input type="datetime-local" id="f-event_start_date">
             </div>
             <div class="field">
-              <label for="f-event_end_date">Date de fin</label>
+              <label for="f-event_end_date" data-i18n="eventEndLabel">Date de fin</label>
               <input type="date" id="f-event_end_date">
-              <p class="field-hint">Passé cette date, l'évènement disparaît automatiquement de la fiche publique (rien n'est supprimé en base).</p>
+              <p class="field-hint" data-i18n="eventEndHint">Passé cette date, l'évènement disparaît automatiquement de la fiche publique (rien n'est supprimé en base).</p>
             </div>
             <div class="field" style="margin-bottom:0;">
-              <label for="f-event_notify_date">Notification mobile pour vos abonnés :</label>
+              <label for="f-event_notify_date" data-i18n="eventNotifyLabel">Notification mobile pour vos abonnés :</label>
               <input type="datetime-local" id="f-event_notify_date">
-              <p class="field-hint">Optionnel — programmez l'envoi d'une notification push aux utilisateurs ayant ce lieu en favori.</p>
+              <p class="field-hint" data-i18n="eventNotifyHint">Optionnel : programmez l'envoi d'une notification push aux utilisateurs ayant ce lieu en favori.</p>
               <p class="field-hint" id="eventNotifySentStatus" style="display:none;"></p>
             </div>
           </div>
@@ -973,16 +1001,16 @@
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="carnetBlockToggle" aria-expanded="false" aria-controls="carnetBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">Votre carnet d'adresses</p>
+            <p class="panel-block-title" data-i18n="carnetTitle">Votre carnet d'adresses</p>
           </button>
           <div class="panel-block-content" id="carnetBlockContent">
-            <p class="carnet-intro">Vous avez d'autres établissements de votre groupe à recommander ? Vous souhaitez partager vos bonnes adresses ? Indiquez ici les lieux que vous souhaitez faire découvrir à vos clients. Cette section est visible sur votre profil dans l'application mobile uniquement (pas sur ce site) — une fois votre fiche publiée, pensez à vérifier que vos adresses y apparaissent bien.</p>
+            <p class="carnet-intro" data-i18n="carnetIntro">Vous avez d'autres établissements de votre groupe à recommander ? Vous souhaitez partager vos bonnes adresses ? Indiquez ici les lieux que vous souhaitez faire découvrir à vos clients. Cette section est visible sur votre profil dans l'application mobile uniquement (pas sur ce site). Une fois votre fiche publiée, pensez à vérifier que vos adresses y apparaissent bien.</p>
 
             <div class="field">
-              <label for="carnetSearchInput">Rechercher un lieu à recommander</label>
+              <label for="carnetSearchInput" data-i18n="carnetSearchLabel">Rechercher un lieu à recommander</label>
               <div style="display:flex; gap:8px;">
-                <input type="text" id="carnetSearchInput" placeholder="Nom du lieu, adresse…" style="flex:1;">
-                <button type="button" class="btn-outline" id="carnetSearchBtn" style="flex-shrink:0;">Rechercher</button>
+                <input type="text" id="carnetSearchInput" data-i18n-placeholder="carnetSearchPlaceholder" placeholder="Nom du lieu, adresse…" style="flex:1;">
+                <button type="button" class="btn-outline" id="carnetSearchBtn" data-i18n="carnetSearchBtn" style="flex-shrink:0;">Rechercher</button>
               </div>
               <p class="field-hint" id="carnetSearchStatus" style="display:none;"></p>
             </div>
@@ -990,54 +1018,54 @@
             <div id="carnetResultsList"></div>
 
             <div id="carnetSavedList" style="margin-top:24px;"></div>
-            <p class="field-hint" id="carnetEmptyNote">Aucune recommandation ajoutée pour l'instant.</p>
+            <p class="field-hint" id="carnetEmptyNote" data-i18n="carnetEmpty">Aucune recommandation ajoutée pour l'instant.</p>
           </div>
         </div>
 
         <div class="panel-block">
           <button type="button" class="panel-block-toggle" id="categoryBlockToggle" aria-expanded="false" aria-controls="categoryBlockContent">
             <svg class="panel-block-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            <p class="panel-block-title">wenno x vous</p>
+            <p class="panel-block-title" data-i18n="wennoXYouTitle">wenno x vous</p>
           </button>
           <div class="panel-block-content" id="categoryBlockContent">
-            <p class="carnet-intro">Partagez un QR code à votre clientèle afin qu'ils puissent télécharger l'application et profiter de vos actualités immédiatement.</p>
+            <p class="carnet-intro" data-i18n="wennoXYouIntro">Partagez un QR code à votre clientèle afin qu'ils puissent télécharger l'application et profiter de vos actualités immédiatement.</p>
 
             <div class="field">
-              <label for="f-place_category">Catégorie</label>
+              <label for="f-place_category" data-i18n="carnetCategoryLabel">Catégorie</label>
               <select id="f-place_category">
-                <option value="">Choisir une catégorie…</option>
-                <option value="restaurants">Restaurants</option>
-                <option value="bars">Bars</option>
-                <option value="coffee_shops">Coffee shops</option>
-                <option value="boutiques">Boutiques</option>
-                <option value="activities">Activités</option>
-                <option value="hotels">Hôtels</option>
-                <option value="services">Services</option>
-                <option value="sante">Santé</option>
+                <option value="" data-i18n="carnetCategoryPlaceholder">Choisir une catégorie…</option>
+                <option value="restaurants" data-i18n="catRestaurants">Restaurants</option>
+                <option value="bars" data-i18n="catBars">Bars</option>
+                <option value="coffee_shops" data-i18n="catCoffeeShops">Coffee shops</option>
+                <option value="boutiques" data-i18n="catBoutiques">Boutiques</option>
+                <option value="activities" data-i18n="catActivities">Activités</option>
+                <option value="hotels" data-i18n="catHotels">Hôtels</option>
+                <option value="services" data-i18n="catServices">Services</option>
+                <option value="sante" data-i18n="catSante">Santé</option>
               </select>
-              <p class="field-hint">Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.</p>
+              <p class="field-hint" data-i18n="categoryHint">Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.</p>
             </div>
 
             <div class="field">
-              <label>Code partenaire</label>
+              <label data-i18n="partnerCodeLabel">Code partenaire</label>
               <div class="field-readonly-value" id="ro-partner_code">—</div>
-              <p class="field-hint" id="partnerCodeMissingHint" style="display:none;">Code établissement partenaire non encore configuré. Contactez contact@wenno.app.</p>
+              <p class="field-hint" id="partnerCodeMissingHint" data-i18n="partnerCodeMissingHint" style="display:none;">Code établissement partenaire non encore configuré. Contactez contact@wenno.app.</p>
             </div>
 
             <div class="field" style="margin-bottom:0;">
-              <label>QR code de présentation</label>
-              <a href="/assets/wenno-qrcode.png" class="btn-outline" target="_blank" rel="noopener">Télécharger le QR code de présentation</a>
-              <p class="field-hint">Un flyer plus travaillé pour votre établissement vous sera fourni séparément.</p>
+              <label data-i18n="qrLabel">QR code de présentation</label>
+              <a href="/assets/wenno-qrcode.png" class="btn-outline" target="_blank" rel="noopener" data-i18n="qrDownloadBtn">Télécharger le QR code de présentation</a>
+              <p class="field-hint" data-i18n="qrHint">Un flyer plus travaillé pour votre établissement vous sera fourni séparément.</p>
             </div>
           </div>
         </div>
 
         <div class="panel-block publish-block">
           <div class="publish-status-row">
-            <span class="badge badge-draft" id="publishBadge">Brouillon</span>
+            <span class="badge badge-draft" id="publishBadge" data-i18n="badgeDraft">Brouillon</span>
           </div>
-          <p class="publish-desc" id="publishDesc">Votre fiche n'est pas encore visible dans l'app Wenno. Publiez-la quand vous êtes prête.</p>
-          <button type="button" class="btn-primary" id="publishBtn">Publier ma fiche</button>
+          <p class="publish-desc" id="publishDesc" data-i18n="publishDescDraft">Votre fiche n'est pas encore visible dans l'app Wenno. Publiez-la dès que vous le souhaitez.</p>
+          <button type="button" class="btn-primary" id="publishBtn" data-i18n="publishBtn">Publier ma fiche</button>
         </div>
 
       </div>
@@ -1046,8 +1074,8 @@
       <div class="panel-preview">
         <div class="preview-card">
           <div class="preview-inner">
-            <img class="preview-cover" id="p-cover" style="display:none;" alt="Photo de couverture">
-            <div class="preview-cover-placeholder" id="p-cover-placeholder">Aucune photo de couverture</div>
+            <img class="preview-cover" id="p-cover" style="display:none;" data-i18n-alt="previewCoverAlt" alt="Photo de couverture">
+            <div class="preview-cover-placeholder" id="p-cover-placeholder" data-i18n="previewNoCover">Aucune photo de couverture</div>
 
             <h2 class="preview-name" id="p-name">—</h2>
 
@@ -1065,7 +1093,7 @@
 
             <div class="preview-hours-accordion" id="p-hours-accordion" style="display:none;">
               <button type="button" class="preview-hours-toggle" id="p-hours-toggle" aria-expanded="false">
-                <span>Horaires</span>
+                <span data-i18n="hoursTitle">Horaires</span>
                 <svg class="preview-hours-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
               </button>
               <div class="preview-hours-content" id="p-hours-content">
@@ -1077,7 +1105,7 @@
             <p class="preview-desc" id="p-desc" style="display:none;"></p>
 
             <div class="preview-event" id="p-event" style="display:none;">
-              <p class="preview-section-label">Save the date</p>
+              <p class="preview-section-label" data-i18n="previewSaveTheDate">Save the date</p>
               <p class="preview-event-startdate" id="p-event-startdate" style="display:none;"></p>
               <h3 class="preview-event-title" id="p-event-title"></h3>
               <div class="preview-event-photo-frame" id="p-event-photo-frame" style="display:none;">
@@ -1086,18 +1114,18 @@
               <p class="preview-event-desc" id="p-event-desc" style="display:none;"></p>
             </div>
 
-            <button type="button" class="preview-menu-toggle" id="p-menu-toggle" style="display:none;">Voir le menu</button>
+            <button type="button" class="preview-menu-toggle" id="p-menu-toggle" data-i18n="previewShowMenu" style="display:none;">Voir le menu</button>
             <div class="preview-menu-list" id="p-menu-list"></div>
 
-            <p class="preview-section-label">Photos</p>
+            <p class="preview-section-label" data-i18n="previewPhotosLabel">Photos</p>
             <div class="preview-gallery" id="p-gallery"></div>
-            <p class="preview-empty-note" id="p-gallery-empty">Aucune photo ajoutée pour l'instant.</p>
+            <p class="preview-empty-note" id="p-gallery-empty" data-i18n="previewNoPhotos">Aucune photo ajoutée pour l'instant.</p>
 
             <div class="preview-reserve-wrap" id="p-reserve-wrap" style="display:none;">
-              <a href="#" target="_blank" rel="noopener noreferrer" class="preview-reserve-btn" id="p-reserve-btn">Réserver</a>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="preview-reserve-btn" id="p-reserve-btn" data-i18n="previewReserveBtn">Réserver</a>
             </div>
 
-            <a href="#" target="_blank" rel="noopener noreferrer" class="preview-maps-btn" id="p-maps-btn" style="display:none;">Ouvrir dans Maps</a>
+            <a href="#" target="_blank" rel="noopener noreferrer" class="preview-maps-btn" id="p-maps-btn" data-i18n="previewMapsBtn" style="display:none;">Ouvrir dans Maps</a>
 
           </div>
         </div>
@@ -1112,6 +1140,364 @@
 <script>
 (function () {
   'use strict';
+
+  // ---- i18n ------------------------------------------------------------
+  var I18N = {
+    fr: {
+      pageTitle: 'wenno pro | Gérer ma fiche',
+      navTag: 'Espace partenaire',
+      helpLink: "Besoin d'aide ?",
+      signOut: 'Déconnexion',
+      saveToastTitle: 'Modifications enregistrées',
+      saveToastSubtitle: "Visibles dans l'application Wenno sous quelques minutes.",
+      saveStatusSaving: 'Enregistrement…',
+      saveStatusSaved: 'Enregistré',
+      saveStatusError: "Échec de l'enregistrement",
+      loading: 'Chargement…',
+      loginTitle: 'Gérer ma fiche wenno',
+      loginDesc: "Connectez-vous avec l'adresse email associée à votre partenariat pour modifier votre fiche.",
+      emailLabel: 'Email',
+      emailPlaceholder: 'vous@exemple.com',
+      loginSubmitBtn: 'Recevoir mon code de connexion',
+      loginSubmitBtnSending: 'Envoi…',
+      loginError: "Impossible d'envoyer le code. Vérifiez l'adresse et réessayez.",
+      loginSuccess: "Un code de connexion vient d'être envoyé par email. Vérifiez votre boîte mail (et vos spams) et saisissez-le ci-dessous.",
+      otpLabel: 'Code reçu par email',
+      otpSubmitBtn: 'Vérifier le code',
+      otpSubmitBtnLoading: 'Vérification…',
+      otpError: 'Code invalide ou expiré, réessayez ou demandez un nouveau code.',
+      noneTitle: 'Aucune fiche associée',
+      noneDesc: "Aucune fiche ne vous est associée pour l'instant, contactez l'équipe Wenno.",
+      pickerTitle: 'Choisissez un établissement',
+      defaultListingTitle: 'Ma fiche',
+      infoTitle: 'Informations établissement',
+      nameLabel: 'Nom',
+      addressLabel: 'Adresse',
+      phoneLabel: 'Téléphone',
+      infoHint: 'Une erreur sur ces informations ? Écrivez à contact@wenno.app.',
+      coverTitle: 'Photo de couverture',
+      coverLabel: 'Photo de couverture (URL)',
+      urlPlaceholder: 'https://…',
+      presentationTitle: 'Présentation',
+      descriptionLabel: 'Description',
+      descriptionPlaceholder: 'Présentez votre lieu en quelques phrases…',
+      hoursTitle: 'Horaires',
+      hoursFieldLabel: 'Horaires',
+      hoursIntroHint: "Tous les jours sont fermés par défaut. Décochez les jours d'ouverture et indiquez les horaires de chaque service.",
+      hoursCheckHint: 'Cochez « Fermé ce jour » pour un jour sans ouverture. Ajoutez plusieurs services pour une coupure déjeuner / dîner.',
+      hoursExtraLabel: 'Précisions complémentaires (optionnel)',
+      hoursExtraPlaceholder: 'Ex: cuisine fermée dès 22h, jours fériés, etc.',
+      hoursExtraHint: "Réservez cet espace à des précisions ponctuelles : jours fériés, fermeture exceptionnelle, horaires d'été, etc.",
+      reservationUrlLabel: 'Lien de réservation (optionnel)',
+      reservationUrlHint: 'Lien TheFork, OpenTable, votre site, ou autre.',
+      reservationLabelLabel: 'Précision (optionnel)',
+      reservationLabelPlaceholder: 'ex: Réserver une chambre, Réserver une table...',
+      dayMonday: 'Lundi', dayTuesday: 'Mardi', dayWednesday: 'Mercredi',
+      dayThursday: 'Jeudi', dayFriday: 'Vendredi', daySaturday: 'Samedi', daySunday: 'Dimanche',
+      dayClosedLabel: 'Fermé ce jour',
+      addRangeBtn: '+ Ajouter un service',
+      removeRangeTitle: 'Supprimer ce service',
+      galleryTitle: 'Galerie photos',
+      addPhotoBtn: '+ Ajouter une photo',
+      removePhotoTitle: 'Supprimer cette photo',
+      menuTitle: 'Menu',
+      addMenuBtn: '+ Ajouter un document',
+      menuTitlePlaceholder: 'Titre (ex : Carte du soir)',
+      removeMenuTitle: 'Supprimer ce document',
+      eventTitle: 'Évènement',
+      eventTitleLabel: 'Titre',
+      eventTitlePlaceholder: 'Soirée DJ, Menu de Noël...',
+      eventDescPlaceholder: 'Décrivez votre évènement en quelques phrases…',
+      eventPhotoLabel: 'Photo',
+      eventPhotoAlt: 'Photo évènement',
+      removeEventPhotoBtn: 'Retirer la photo',
+      eventPhotoHint: 'JPEG, PNG ou WEBP, 5 Mo maximum.',
+      chooseFileBtn: 'Choisir un fichier',
+      noFileChosen: 'Aucun fichier choisi',
+      eventStartLabel: 'Date de début (optionnel)',
+      eventEndLabel: 'Date de fin',
+      eventEndHint: "Passé cette date, l'évènement disparaît automatiquement de la fiche publique (rien n'est supprimé en base).",
+      eventNotifyLabel: 'Notification mobile pour vos abonnés :',
+      eventNotifyHint: "Optionnel : programmez l'envoi d'une notification push aux utilisateurs ayant ce lieu en favori.",
+      eventNotifyAlreadySent: 'Déjà envoyée le {date}.',
+      eventPhotoUploading: 'Envoi en cours…',
+      eventPhotoUploadFailed: "Échec de l'envoi, réessayez.",
+      eventPhotoTooBig: 'Cette photo dépasse 5 Mo. Choisissez un fichier plus léger.',
+      eventPhotoInvalidType: 'Ce fichier ne semble pas être une image JPEG, PNG ou WEBP valide.',
+      eventPhotoReadError: 'Impossible de lire ce fichier.',
+      eventNotifyConfirm: "Une notification pour informer de votre évènement sera envoyée le {date}. Confirmer l'envoi ?",
+      carnetTitle: "Votre carnet d'adresses",
+      carnetIntro: "Vous avez d'autres établissements de votre groupe à recommander ? Vous souhaitez partager vos bonnes adresses ? Indiquez ici les lieux que vous souhaitez faire découvrir à vos clients. Cette section est visible sur votre profil dans l'application mobile uniquement (pas sur ce site). Une fois votre fiche publiée, pensez à vérifier que vos adresses y apparaissent bien.",
+      carnetSearchLabel: 'Rechercher un lieu à recommander',
+      carnetSearchPlaceholder: 'Nom du lieu, adresse…',
+      carnetSearchBtn: 'Rechercher',
+      carnetSearching: 'Recherche…',
+      carnetSearchUnavailable: 'Recherche indisponible, réessayez.',
+      carnetNoResults: 'Aucun résultat.',
+      carnetEmpty: 'Aucune recommandation ajoutée pour l\'instant.',
+      carnetNoName: 'Sans nom',
+      carnetCategoryMissing: 'Catégorie manquante',
+      carnetRemoveTitle: 'Retirer cette recommandation',
+      carnetRemoveConfirm: 'Retirer cette recommandation du carnet ?',
+      carnetAddError: "Impossible d'ajouter ce lieu.",
+      carnetCategoryLabel: 'Catégorie',
+      carnetCategoryPlaceholder: 'Choisir une catégorie…',
+      carnetCategoryError: 'Choisissez une catégorie pour continuer.',
+      carnetCategoryConfirm: 'Ajouter au carnet',
+      catRestaurants: 'Restaurants', catBars: 'Bars', catCoffeeShops: 'Coffee shops',
+      catBoutiques: 'Boutiques', catActivities: 'Activités', catHotels: 'Hôtels',
+      catServices: 'Services', catSante: 'Santé',
+      wennoXYouTitle: 'wenno x vous',
+      wennoXYouIntro: 'Partagez un QR code à votre clientèle afin qu\'ils puissent télécharger l\'application et profiter de vos actualités immédiatement.',
+      categoryHint: 'Cette catégorie détermine où votre établissement apparaît automatiquement dans le carnet des nouveaux clients arrivant via votre code partenaire.',
+      partnerCodeLabel: 'Code partenaire',
+      partnerCodeMissingHint: 'Code établissement partenaire non encore configuré. Contactez contact@wenno.app.',
+      qrLabel: 'QR code de présentation',
+      qrDownloadBtn: 'Télécharger le QR code de présentation',
+      qrHint: 'Un flyer plus travaillé pour votre établissement vous sera fourni séparément.',
+      badgeDraft: 'Brouillon',
+      badgePublished: 'Publiée',
+      publishDescDraft: "Votre fiche n'est pas encore visible dans l'app Wenno. Publiez-la dès que vous le souhaitez.",
+      publishDescPublished: "Votre fiche est actuellement visible dans l'app Wenno.",
+      publishBtn: 'Publier ma fiche',
+      unpublishBtn: 'Dépublier',
+      unpublishConfirm: "Dépublier votre fiche ? Elle ne sera plus visible dans l'app Wenno.",
+      previewCoverAlt: 'Photo de couverture',
+      previewNoCover: 'Aucune photo de couverture',
+      previewNoAddress: 'Adresse non renseignée',
+      previewSaveTheDate: 'Save the date',
+      previewShowMenu: 'Voir le menu',
+      previewHideMenu: 'Masquer le menu',
+      previewPhotosLabel: 'Photos',
+      previewNoPhotos: "Aucune photo ajoutée pour l'instant.",
+      previewReserveBtn: 'Réserver',
+      previewMapsBtn: 'Ouvrir dans Maps',
+      previewPhotoAlt: 'Photo',
+      previewDocAlt: 'Document'
+    },
+    en: {
+      pageTitle: 'wenno pro | Manage my listing',
+      navTag: 'Partner area',
+      helpLink: 'Need help?',
+      signOut: 'Log out',
+      saveToastTitle: 'Changes saved',
+      saveToastSubtitle: 'Visible in the Wenno app within a few minutes.',
+      saveStatusSaving: 'Saving…',
+      saveStatusSaved: 'Saved',
+      saveStatusError: 'Failed to save',
+      loading: 'Loading…',
+      loginTitle: 'Manage my wenno listing',
+      loginDesc: 'Log in with the email address linked to your partnership to edit your listing.',
+      emailLabel: 'Email',
+      emailPlaceholder: 'you@example.com',
+      loginSubmitBtn: 'Get my login code',
+      loginSubmitBtnSending: 'Sending…',
+      loginError: "Couldn't send the code. Check the address and try again.",
+      loginSuccess: 'A login code was just sent by email. Check your inbox (and spam folder) and enter it below.',
+      otpLabel: 'Code received by email',
+      otpSubmitBtn: 'Verify code',
+      otpSubmitBtnLoading: 'Verifying…',
+      otpError: 'Invalid or expired code, try again or request a new one.',
+      noneTitle: 'No listing linked',
+      noneDesc: 'No listing is linked to your account yet, contact the Wenno team.',
+      pickerTitle: 'Choose a venue',
+      defaultListingTitle: 'My listing',
+      infoTitle: 'Venue information',
+      nameLabel: 'Name',
+      addressLabel: 'Address',
+      phoneLabel: 'Phone',
+      infoHint: 'Spotted an error in this info? Email contact@wenno.app.',
+      coverTitle: 'Cover photo',
+      coverLabel: 'Cover photo (URL)',
+      urlPlaceholder: 'https://…',
+      presentationTitle: 'About',
+      descriptionLabel: 'Description',
+      descriptionPlaceholder: 'Introduce your venue in a few sentences…',
+      hoursTitle: 'Hours',
+      hoursFieldLabel: 'Hours',
+      hoursIntroHint: "All days are closed by default. Uncheck the days you're open and set the hours for each service.",
+      hoursCheckHint: 'Check "Closed this day" for a day with no opening hours. Add several services for a lunch / dinner split.',
+      hoursExtraLabel: 'Additional notes (optional)',
+      hoursExtraPlaceholder: 'E.g. kitchen closes at 10pm, public holidays, etc.',
+      hoursExtraHint: 'Use this space for occasional notes: public holidays, exceptional closures, summer hours, etc.',
+      reservationUrlLabel: 'Booking link (optional)',
+      reservationUrlHint: 'TheFork, OpenTable, your own site, or another link.',
+      reservationLabelLabel: 'Label (optional)',
+      reservationLabelPlaceholder: 'e.g. Book a room, Book a table...',
+      dayMonday: 'Monday', dayTuesday: 'Tuesday', dayWednesday: 'Wednesday',
+      dayThursday: 'Thursday', dayFriday: 'Friday', daySaturday: 'Saturday', daySunday: 'Sunday',
+      dayClosedLabel: 'Closed this day',
+      addRangeBtn: '+ Add a service',
+      removeRangeTitle: 'Remove this service',
+      galleryTitle: 'Photo gallery',
+      addPhotoBtn: '+ Add a photo',
+      removePhotoTitle: 'Remove this photo',
+      menuTitle: 'Menu',
+      addMenuBtn: '+ Add a document',
+      menuTitlePlaceholder: 'Title (e.g. Dinner menu)',
+      removeMenuTitle: 'Remove this document',
+      eventTitle: 'Event',
+      eventTitleLabel: 'Title',
+      eventTitlePlaceholder: 'DJ night, Christmas menu...',
+      eventDescPlaceholder: 'Describe your event in a few sentences…',
+      eventPhotoLabel: 'Photo',
+      eventPhotoAlt: 'Event photo',
+      removeEventPhotoBtn: 'Remove photo',
+      eventPhotoHint: 'JPEG, PNG or WEBP, 5 MB maximum.',
+      chooseFileBtn: 'Choose a file',
+      noFileChosen: 'No file chosen',
+      eventStartLabel: 'Start date (optional)',
+      eventEndLabel: 'End date',
+      eventEndHint: "Past this date, the event automatically disappears from the public listing (nothing is deleted from the database).",
+      eventNotifyLabel: 'Mobile notification for your followers:',
+      eventNotifyHint: 'Optional: schedule a push notification to users who have this place as a favorite.',
+      eventNotifyAlreadySent: 'Already sent on {date}.',
+      eventPhotoUploading: 'Uploading…',
+      eventPhotoUploadFailed: 'Upload failed, try again.',
+      eventPhotoTooBig: 'This photo is over 5 MB. Please choose a smaller file.',
+      eventPhotoInvalidType: "This file doesn't look like a valid JPEG, PNG or WEBP image.",
+      eventPhotoReadError: "Couldn't read this file.",
+      eventNotifyConfirm: 'A notification about your event will be sent on {date}. Confirm sending?',
+      carnetTitle: 'Your address book',
+      carnetIntro: "Do you have other venues from your group to recommend? Want to share your favorite spots? List here the places you'd like your clients to discover. This section is visible on your profile in the mobile app only (not on this site). Once your listing is published, make sure your places show up correctly.",
+      carnetSearchLabel: 'Search for a place to recommend',
+      carnetSearchPlaceholder: 'Place name, address…',
+      carnetSearchBtn: 'Search',
+      carnetSearching: 'Searching…',
+      carnetSearchUnavailable: 'Search unavailable, try again.',
+      carnetNoResults: 'No results.',
+      carnetEmpty: 'No recommendations added yet.',
+      carnetNoName: 'No name',
+      carnetCategoryMissing: 'Category missing',
+      carnetRemoveTitle: 'Remove this recommendation',
+      carnetRemoveConfirm: 'Remove this recommendation from the address book?',
+      carnetAddError: "Couldn't add this place.",
+      carnetCategoryLabel: 'Category',
+      carnetCategoryPlaceholder: 'Choose a category…',
+      carnetCategoryError: 'Choose a category to continue.',
+      carnetCategoryConfirm: 'Add to address book',
+      catRestaurants: 'Restaurants', catBars: 'Bars', catCoffeeShops: 'Coffee shops',
+      catBoutiques: 'Shops', catActivities: 'Activities', catHotels: 'Hotels',
+      catServices: 'Services', catSante: 'Health',
+      wennoXYouTitle: 'wenno x you',
+      wennoXYouIntro: 'Share a QR code with your customers so they can download the app and enjoy your updates right away.',
+      categoryHint: 'This category determines where your venue automatically appears in the address book of new customers arriving via your partner code.',
+      partnerCodeLabel: 'Partner code',
+      partnerCodeMissingHint: 'Partner venue code not yet set up. Contact contact@wenno.app.',
+      qrLabel: 'Presentation QR code',
+      qrDownloadBtn: 'Download the presentation QR code',
+      qrHint: 'A more polished flyer for your venue will be provided separately.',
+      badgeDraft: 'Draft',
+      badgePublished: 'Published',
+      publishDescDraft: "Your listing isn't visible in the Wenno app yet. Publish it whenever you're ready.",
+      publishDescPublished: 'Your listing is currently visible in the Wenno app.',
+      publishBtn: 'Publish my listing',
+      unpublishBtn: 'Unpublish',
+      unpublishConfirm: 'Unpublish your listing? It will no longer be visible in the Wenno app.',
+      previewCoverAlt: 'Cover photo',
+      previewNoCover: 'No cover photo',
+      previewNoAddress: 'Address not provided',
+      previewSaveTheDate: 'Save the date',
+      previewShowMenu: 'View menu',
+      previewHideMenu: 'Hide menu',
+      previewPhotosLabel: 'Photos',
+      previewNoPhotos: 'No photos added yet.',
+      previewReserveBtn: 'Book',
+      previewMapsBtn: 'Open in Maps',
+      previewPhotoAlt: 'Photo',
+      previewDocAlt: 'Document'
+    }
+  };
+
+  var MONTHS_BY_LANG = {
+    fr: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  };
+
+  var currentLang = 'fr';
+
+  function detectInitialLang() {
+    try {
+      var saved = localStorage.getItem('wenno_pro_lang');
+      if (saved === 'fr' || saved === 'en') return saved;
+    } catch (e) {}
+    return (navigator.language || '').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en';
+  }
+
+  function t(key, vars) {
+    var dict = I18N[currentLang] || I18N.fr;
+    var str = dict[key] != null ? dict[key] : (I18N.fr[key] != null ? I18N.fr[key] : key);
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        str = str.split('{' + k + '}').join(vars[k]);
+      });
+    }
+    return str;
+  }
+
+  // Applique les attributs data-i18n* au HTML statique. Independant du
+  // contenu genere dynamiquement par les fonctions renderXxx (gere a part
+  // dans setLang, pour pouvoir leur passer des variables).
+  function applyStaticI18n() {
+    document.title = t('pageTitle');
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      el.title = t(el.getAttribute('data-i18n-title'));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach(function (el) {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+    });
+    document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
+      el.alt = t(el.getAttribute('data-i18n-alt'));
+    });
+  }
+
+  function updateLangButtons() {
+    var frBtn = document.getElementById('langFrBtn');
+    var enBtn = document.getElementById('langEnBtn');
+    frBtn.classList.toggle('active', currentLang === 'fr');
+    enBtn.classList.toggle('active', currentLang === 'en');
+    frBtn.setAttribute('aria-pressed', currentLang === 'fr' ? 'true' : 'false');
+    enBtn.setAttribute('aria-pressed', currentLang === 'en' ? 'true' : 'false');
+  }
+
+  // Change de langue immediatement, sans recharger la page. Le contenu
+  // genere dynamiquement (galerie, menu, horaires, carnet) est re-rendu a
+  // partir de `profile`/`recommendations`/`lastCarnetResults` (jamais lu
+  // depuis le DOM) : aucune saisie en cours n'est perdue.
+  function setLang(lang) {
+    if (lang !== 'fr' && lang !== 'en') return;
+    currentLang = lang;
+    try { localStorage.setItem('wenno_pro_lang', lang); } catch (e) {}
+    document.documentElement.lang = lang;
+    applyStaticI18n();
+    updateLangButtons();
+    if (profile) {
+      document.getElementById('editorHeaderTitle').textContent = profile.business_name || t('defaultListingTitle');
+      renderGalleryList();
+      renderMenuDocumentsList();
+      renderHoursGrid();
+      renderPublishState();
+      renderEventNotifySentStatus();
+      renderCarnetSaved();
+      if (lastCarnetResults.length) renderCarnetResults(lastCarnetResults);
+      renderPreview();
+      updateEventPhotoFileName();
+    }
+  }
+
+  document.getElementById('langFrBtn').addEventListener('click', function () { setLang('fr'); });
+  document.getElementById('langEnBtn').addEventListener('click', function () { setLang('en'); });
+
+  currentLang = detectInitialLang();
+  document.documentElement.lang = currentLang;
+  applyStaticI18n();
+  updateLangButtons();
 
   // ---- Config ----------------------------------------------------------
   // Cle publique (anon/publishable) : securisee par les policies RLS sur
@@ -1132,17 +1518,16 @@
   var cityLabel = '';       // nom de ville resolu
   var saveTimer = null;
   var hoursOpen = false;    // etat ouvert/ferme de l'accordeon Horaires, persiste entre les re-rendus
-  var HOURS_DAYS = [
-    { key: 'monday', label: 'Lundi' },
-    { key: 'tuesday', label: 'Mardi' },
-    { key: 'wednesday', label: 'Mercredi' },
-    { key: 'thursday', label: 'Jeudi' },
-    { key: 'friday', label: 'Vendredi' },
-    { key: 'saturday', label: 'Samedi' },
-    { key: 'sunday', label: 'Dimanche' }
-  ];
+  // Labels traduits via t(HOURS_DAY_I18N_KEY[key]) plutot qu'en dur ici, pour
+  // rester reactifs a un changement de langue (cf. setLang).
+  var HOURS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  var HOURS_DAY_I18N_KEY = {
+    monday: 'dayMonday', tuesday: 'dayTuesday', wednesday: 'dayWednesday',
+    thursday: 'dayThursday', friday: 'dayFriday', saturday: 'daySaturday', sunday: 'daySunday'
+  };
   var otpEmail = '';        // email capture a l'envoi du code, reutilise pour verifyOtp
   var recommendations = []; // lignes pro_recommendations de la fiche courante
+  var lastCarnetResults = []; // derniers resultats de recherche carnet, pour re-rendu au changement de langue (cf. setLang)
 
   // ---- Lightbox generique (galerie + evenement, admin + apercu public) -------
   // Volontairement pas utilisee pour la photo de couverture.
@@ -1181,16 +1566,16 @@
     var errEl = document.getElementById('loginError');
     errEl.style.display = 'none';
     btn.disabled = true;
-    btn.textContent = 'Envoi…';
+    btn.textContent = t('loginSubmitBtnSending');
 
     sb.auth.signInWithOtp({
       email: email,
       options: { emailRedirectTo: window.location.origin + window.location.pathname }
     }).then(function (res) {
       btn.disabled = false;
-      btn.textContent = 'Recevoir mon code de connexion';
+      btn.textContent = t('loginSubmitBtn');
       if (res.error) {
-        errEl.textContent = "Impossible d'envoyer le code. Vérifie l'adresse et réessaie.";
+        errEl.textContent = t('loginError');
         errEl.style.display = 'block';
         return;
       }
@@ -1207,13 +1592,13 @@
     var errEl = document.getElementById('otpError');
     errEl.style.display = 'none';
     btn.disabled = true;
-    btn.textContent = 'Vérification…';
+    btn.textContent = t('otpSubmitBtnLoading');
 
     sb.auth.verifyOtp({ email: otpEmail, token: code, type: 'email' }).then(function (res) {
       btn.disabled = false;
-      btn.textContent = 'Vérifier le code';
+      btn.textContent = t('otpSubmitBtn');
       if (res.error) {
-        errEl.textContent = 'Code invalide ou expiré, réessaie ou redemande un code.';
+        errEl.textContent = t('otpError');
         errEl.style.display = 'block';
         return;
       }
@@ -1298,7 +1683,7 @@
   }
 
   function fillForm() {
-    document.getElementById('editorHeaderTitle').textContent = profile.business_name || 'Ma fiche';
+    document.getElementById('editorHeaderTitle').textContent = profile.business_name || t('defaultListingTitle');
 
     document.getElementById('ro-business_name').textContent = profile.business_name || '—';
     document.getElementById('ro-address').textContent = profile.address || '—';
@@ -1390,9 +1775,7 @@
     }
 
     var formattedDate = formatDatetimeLocalForConfirm(newValue);
-    var confirmed = window.confirm(
-      'Une notification pour informer de votre évènement sera envoyée le ' + formattedDate + '. Confirmer l\'envoi ?'
-    );
+    var confirmed = window.confirm(t('eventNotifyConfirm', { date: formattedDate }));
 
     if (!confirmed) {
       // Revient exactement a la valeur sauvegardee precedente (vide ou date
@@ -1459,15 +1842,30 @@
   });
   document.getElementById('eventPhotoPreviewImg').style.cursor = 'pointer';
 
+  // Reflete le fichier actuellement selectionne dans #f-event_photo (natif,
+  // masque visuellement) sur le bouton personnalise ci-dessus. Lit toujours
+  // fileInput.files/.value au moment de l'appel plutot que de recevoir le
+  // nom en parametre : reste juste apres chaque fileInput.value = '' deja
+  // present dans la logique de validation/upload ci-dessous, sans aucune
+  // autre modification de cette logique.
+  function updateEventPhotoFileName() {
+    var fileInput = document.getElementById('f-event_photo');
+    var nameEl = document.getElementById('eventPhotoFileName');
+    var file = fileInput.files && fileInput.files[0];
+    nameEl.textContent = file ? file.name : t('noFileChosen');
+  }
+
   document.getElementById('f-event_photo').addEventListener('change', function (e) {
     var fileInput = e.target;
     var file = fileInput.files && fileInput.files[0];
     var statusEl = document.getElementById('eventPhotoStatus');
     if (!file) return;
+    updateEventPhotoFileName();
 
     if (file.size > EVENT_PHOTO_MAX_BYTES) {
-      window.alert('Cette photo dépasse 5 Mo. Choisis un fichier plus léger.');
+      window.alert(t('eventPhotoTooBig'));
       fileInput.value = '';
+      updateEventPhotoFileName();
       return;
     }
 
@@ -1478,8 +1876,9 @@
       var ext = detectedType && EVENT_PHOTO_ALLOWED_TYPES[detectedType];
 
       if (!ext) {
-        window.alert("Ce fichier ne semble pas être une image JPEG, PNG ou WEBP valide.");
+        window.alert(t('eventPhotoInvalidType'));
         fileInput.value = '';
+        updateEventPhotoFileName();
         return;
       }
 
@@ -1487,7 +1886,7 @@
       // eviter une double soumission accidentelle.
       fileInput.disabled = true;
       statusEl.style.display = 'block';
-      statusEl.textContent = 'Envoi en cours…';
+      statusEl.textContent = t('eventPhotoUploading');
 
       var path = profile.google_place_id + '/event-' + Date.now() + '.' + ext;
 
@@ -1495,8 +1894,9 @@
         .then(function (res) {
           fileInput.disabled = false;
           fileInput.value = '';
+          updateEventPhotoFileName();
           if (res.error) {
-            statusEl.textContent = "Échec de l'envoi, réessaie.";
+            statusEl.textContent = t('eventPhotoUploadFailed');
             console.error('[pro] event photo upload error', res.error);
             return;
           }
@@ -1510,13 +1910,15 @@
         .catch(function (err) {
           fileInput.disabled = false;
           fileInput.value = '';
-          statusEl.textContent = "Échec de l'envoi, réessaie.";
+          updateEventPhotoFileName();
+          statusEl.textContent = t('eventPhotoUploadFailed');
           console.error('[pro] event photo upload exception', err);
         });
     };
     reader.onerror = function () {
-      window.alert("Impossible de lire ce fichier.");
+      window.alert(t('eventPhotoReadError'));
       fileInput.value = '';
+      updateEventPhotoFileName();
     };
     reader.readAsArrayBuffer(file.slice(0, 12));
   });
@@ -1569,7 +1971,7 @@
       var inputWrap = document.createElement('div');
       var input = document.createElement('input');
       input.type = 'url';
-      input.placeholder = 'https://…';
+      input.placeholder = t('urlPlaceholder');
       input.value = url;
       input.addEventListener('input', function (e) {
         profile.gallery_photos[idx] = e.target.value;
@@ -1583,7 +1985,7 @@
       removeBtn.type = 'button';
       removeBtn.className = 'btn-remove';
       removeBtn.textContent = '×';
-      removeBtn.title = 'Supprimer cette photo';
+      removeBtn.title = t('removePhotoTitle');
       removeBtn.addEventListener('click', function () {
         profile.gallery_photos.splice(idx, 1);
         renderGalleryList();
@@ -1622,7 +2024,7 @@
       var titleWrap = document.createElement('div');
       var titleInput = document.createElement('input');
       titleInput.type = 'text';
-      titleInput.placeholder = 'Titre (ex : Carte du soir)';
+      titleInput.placeholder = t('menuTitlePlaceholder');
       titleInput.value = doc.title || '';
       titleInput.addEventListener('input', function (e) {
         profile.menu_documents[idx].title = e.target.value;
@@ -1634,7 +2036,7 @@
       var urlWrap = document.createElement('div');
       var urlInput = document.createElement('input');
       urlInput.type = 'url';
-      urlInput.placeholder = 'https://…';
+      urlInput.placeholder = t('urlPlaceholder');
       urlInput.value = doc.url || '';
       urlInput.addEventListener('input', function (e) {
         profile.menu_documents[idx].url = e.target.value;
@@ -1647,7 +2049,7 @@
       removeBtn.type = 'button';
       removeBtn.className = 'btn-remove';
       removeBtn.textContent = '×';
-      removeBtn.title = 'Supprimer ce document';
+      removeBtn.title = t('removeMenuTitle');
       removeBtn.addEventListener('click', function () {
         profile.menu_documents.splice(idx, 1);
         renderMenuDocumentsList();
@@ -1679,7 +2081,7 @@
   // explicite du partenaire.
   function buildDefaultHoursStructured() {
     var obj = {};
-    HOURS_DAYS.forEach(function (d) { obj[d.key] = { closed: true, ranges: [] }; });
+    HOURS_DAYS.forEach(function (dayKey) { obj[dayKey] = { closed: true, ranges: [] }; });
     return obj;
   }
   function getHoursStructured() {
@@ -1702,13 +2104,14 @@
   function formatHoursStructured(hs) {
     if (!hs) return '';
     var lines = [];
-    HOURS_DAYS.forEach(function (day) {
-      var d = hs[day.key];
+    var sep = currentLang === 'fr' ? ' : ' : ': ';
+    HOURS_DAYS.forEach(function (dayKey) {
+      var d = hs[dayKey];
       if (!d || d.closed) return;
       var ranges = (d.ranges || []).filter(function (r) { return r && r.open && r.close; });
       if (!ranges.length) return;
       var rangesText = ranges.map(function (r) { return r.open + ' – ' + r.close; }).join(', ');
-      lines.push(day.label + ' : ' + rangesText);
+      lines.push(t(HOURS_DAY_I18N_KEY[dayKey]) + sep + rangesText);
     });
     return lines.join('\n');
   }
@@ -1735,10 +2138,20 @@
       'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
 
-  var MONTHS_FR = [
-    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-  ];
+  // Formate une date deja decomposee (jour/mois/annee/heure/minute) dans la
+  // langue courante. Fr : "15 septembre 2026 à 20h00" (format d'origine,
+  // inchange). En : "September 15, 2026 at 8:00 PM" (12h, convention anglaise
+  // naturelle) — utilisee par formatEventStartDate et
+  // formatDatetimeLocalForConfirm ci-dessous, jamais appelee directement.
+  function formatDateParts(day, month, year, hour, minute) {
+    var pad2 = function (n) { return n < 10 ? '0' + n : '' + n; };
+    if (currentLang === 'en') {
+      var h12 = hour % 12; if (h12 === 0) h12 = 12;
+      var ampm = hour < 12 ? 'AM' : 'PM';
+      return MONTHS_BY_LANG.en[month] + ' ' + day + ', ' + year + ' at ' + h12 + ':' + pad2(minute) + ' ' + ampm;
+    }
+    return day + ' ' + MONTHS_BY_LANG.fr[month] + ' ' + year + ' à ' + pad2(hour) + 'h' + pad2(minute);
+  }
 
   // Formate event_start_date (timestamptz, stocke en UTC) en "15 septembre
   // 2026 à 20h00". Utilise le fuseau du profil si disponible (Intl,
@@ -1785,8 +2198,7 @@
       minute = date.getUTCMinutes();
     }
 
-    var pad2 = function (n) { return n < 10 ? '0' + n : '' + n; };
-    return day + ' ' + MONTHS_FR[month] + ' ' + year + ' à ' + pad2(hour) + 'h' + pad2(minute);
+    return formatDateParts(day, month, year, hour, minute);
   }
 
   // Formate directement la valeur brute d'un input datetime-local
@@ -1803,7 +2215,9 @@
     var year = parseInt(match[1], 10);
     var month = parseInt(match[2], 10) - 1;
     var day = parseInt(match[3], 10);
-    return day + ' ' + MONTHS_FR[month] + ' ' + year + ' à ' + match[4] + 'h' + match[5];
+    var hour = parseInt(match[4], 10);
+    var minute = parseInt(match[5], 10);
+    return formatDateParts(day, month, year, hour, minute);
   }
 
   // Indication discrete si la notification a deja ete traitee par le job
@@ -1814,7 +2228,7 @@
   function renderEventNotifySentStatus() {
     var el = document.getElementById('eventNotifySentStatus');
     if (profile.event_notify_sent_at) {
-      el.textContent = 'Déjà envoyée le ' + formatEventStartDate(profile.event_notify_sent_at, profile.timezone) + '.';
+      el.textContent = t('eventNotifyAlreadySent', { date: formatEventStartDate(profile.event_notify_sent_at, profile.timezone) });
       el.style.display = '';
     } else {
       el.textContent = '';
@@ -1827,8 +2241,8 @@
     container.innerHTML = '';
     var data = getHoursStructured();
 
-    HOURS_DAYS.forEach(function (day) {
-      var dayData = data[day.key] || { closed: true, ranges: [] };
+    HOURS_DAYS.forEach(function (dayKey) {
+      var dayData = data[dayKey] || { closed: true, ranges: [] };
 
       var dayBlock = document.createElement('div');
       dayBlock.className = 'hours-day';
@@ -1838,7 +2252,7 @@
 
       var label = document.createElement('span');
       label.className = 'hours-day-label';
-      label.textContent = day.label;
+      label.textContent = t(HOURS_DAY_I18N_KEY[dayKey]);
       header.appendChild(label);
 
       var closedWrap = document.createElement('label');
@@ -1848,7 +2262,7 @@
       checkbox.checked = !!dayData.closed;
       checkbox.addEventListener('change', function (e) {
         var hs = ensureHoursStructured();
-        var d = ensureDayEntry(hs, day.key);
+        var d = ensureDayEntry(hs, dayKey);
         d.closed = e.target.checked;
         if (d.closed) {
           d.ranges = [];
@@ -1859,7 +2273,7 @@
         scheduleSave();
       });
       closedWrap.appendChild(checkbox);
-      closedWrap.appendChild(document.createTextNode('Fermé ce jour'));
+      closedWrap.appendChild(document.createTextNode(t('dayClosedLabel')));
       header.appendChild(closedWrap);
 
       dayBlock.appendChild(header);
@@ -1878,7 +2292,7 @@
           openInput.value = range.open || '';
           openInput.addEventListener('input', function (e) {
             var hs = ensureHoursStructured();
-            var d = ensureDayEntry(hs, day.key);
+            var d = ensureDayEntry(hs, dayKey);
             if (d.ranges[rangeIdx]) d.ranges[rangeIdx].open = e.target.value;
             scheduleSave();
           });
@@ -1894,7 +2308,7 @@
           closeInput.value = range.close || '';
           closeInput.addEventListener('input', function (e) {
             var hs = ensureHoursStructured();
-            var d = ensureDayEntry(hs, day.key);
+            var d = ensureDayEntry(hs, dayKey);
             if (d.ranges[rangeIdx]) d.ranges[rangeIdx].close = e.target.value;
             scheduleSave();
           });
@@ -1904,10 +2318,10 @@
           removeBtn.type = 'button';
           removeBtn.className = 'btn-remove';
           removeBtn.textContent = '×';
-          removeBtn.title = 'Supprimer ce service';
+          removeBtn.title = t('removeRangeTitle');
           removeBtn.addEventListener('click', function () {
             var hs = ensureHoursStructured();
-            var d = ensureDayEntry(hs, day.key);
+            var d = ensureDayEntry(hs, dayKey);
             d.ranges.splice(rangeIdx, 1);
             renderHoursGrid();
             scheduleSave();
@@ -1923,10 +2337,10 @@
         var addRangeBtn = document.createElement('button');
         addRangeBtn.type = 'button';
         addRangeBtn.className = 'btn-add hours-add-range';
-        addRangeBtn.textContent = '+ Ajouter un service';
+        addRangeBtn.textContent = t('addRangeBtn');
         addRangeBtn.addEventListener('click', function () {
           var hs = ensureHoursStructured();
-          var d = ensureDayEntry(hs, day.key);
+          var d = ensureDayEntry(hs, dayKey);
           d.ranges.push({ open: '', close: '' });
           renderHoursGrid();
           scheduleSave();
@@ -1947,22 +2361,22 @@
     var btn = document.getElementById('publishBtn');
 
     if (profile.is_published) {
-      badge.textContent = 'Publiée';
+      badge.textContent = t('badgePublished');
       badge.className = 'badge badge-published';
-      desc.textContent = 'Votre fiche est actuellement visible dans l’app Wenno.';
-      btn.textContent = 'Dépublier';
+      desc.textContent = t('publishDescPublished');
+      btn.textContent = t('unpublishBtn');
       btn.className = 'btn-primary btn-unpublish';
     } else {
-      badge.textContent = 'Brouillon';
+      badge.textContent = t('badgeDraft');
       badge.className = 'badge badge-draft';
-      desc.textContent = "Votre fiche n'est pas encore visible dans l'app Wenno. Publiez-la quand vous êtes prête.";
-      btn.textContent = 'Publier ma fiche';
+      desc.textContent = t('publishDescDraft');
+      btn.textContent = t('publishBtn');
       btn.className = 'btn-primary';
     }
   }
   document.getElementById('publishBtn').addEventListener('click', function () {
     if (profile.is_published) {
-      if (!window.confirm('Dépublier ta fiche ? Elle ne sera plus visible dans l’app Wenno.')) return;
+      if (!window.confirm(t('unpublishConfirm'))) return;
     }
     var nextValue = !profile.is_published;
     var btn = document.getElementById('publishBtn');
@@ -1989,20 +2403,18 @@
   // (migration 073, etendue pour Services/Sante). Obligatoire pour toute
   // nouvelle recommandation — un partenaire ne peut valider l'ajout d'un
   // lieu sans en choisir une.
-  var CARNET_CATEGORIES = [
-    { id: 'restaurants', label: 'Restaurants' },
-    { id: 'bars', label: 'Bars' },
-    { id: 'coffee_shops', label: 'Coffee shops' },
-    { id: 'boutiques', label: 'Boutiques' },
-    { id: 'activities', label: 'Activités' },
-    { id: 'hotels', label: 'Hôtels' },
-    { id: 'services', label: 'Services' },
-    { id: 'sante', label: 'Santé' }
-  ];
+  // Labels traduits via t(CARNET_CATEGORY_I18N_KEY[id]) plutot qu'en dur ici,
+  // pour rester reactifs a un changement de langue (cf. setLang).
+  var CARNET_CATEGORY_IDS = ['restaurants', 'bars', 'coffee_shops', 'boutiques', 'activities', 'hotels', 'services', 'sante'];
+  var CARNET_CATEGORY_I18N_KEY = {
+    restaurants: 'catRestaurants', bars: 'catBars', coffee_shops: 'catCoffeeShops',
+    boutiques: 'catBoutiques', activities: 'catActivities', hotels: 'catHotels',
+    services: 'catServices', sante: 'catSante'
+  };
 
-  function carnetCategoryLabel(id) {
-    var match = CARNET_CATEGORIES.filter(function (c) { return c.id === id; })[0];
-    return match ? match.label : null;
+  function getCarnetCategoryLabel(id) {
+    var key = CARNET_CATEGORY_I18N_KEY[id];
+    return key ? t(key) : null;
   }
 
   function loadRecommendations() {
@@ -2038,7 +2450,7 @@
       var textWrap = document.createElement('div');
       var nameEl = document.createElement('div');
       nameEl.className = 'carnet-saved-name';
-      nameEl.textContent = rec.name || 'Sans nom';
+      nameEl.textContent = rec.name || t('carnetNoName');
       textWrap.appendChild(nameEl);
       if (rec.address) {
         var addrEl = document.createElement('div');
@@ -2047,16 +2459,16 @@
         textWrap.appendChild(addrEl);
       }
       var categoryEl = document.createElement('div');
-      var categoryLabel = carnetCategoryLabel(rec.category);
+      var categoryLabel = getCarnetCategoryLabel(rec.category);
       categoryEl.className = 'carnet-saved-category' + (categoryLabel ? '' : ' carnet-saved-category-missing');
-      categoryEl.textContent = categoryLabel || 'Catégorie manquante';
+      categoryEl.textContent = categoryLabel || t('carnetCategoryMissing');
       textWrap.appendChild(categoryEl);
 
       var removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'btn-remove';
       removeBtn.textContent = '×';
-      removeBtn.title = 'Retirer cette recommandation';
+      removeBtn.title = t('carnetRemoveTitle');
       removeBtn.addEventListener('click', function () { removeRecommendation(rec.id); });
 
       row.appendChild(textWrap);
@@ -2066,7 +2478,7 @@
   }
 
   function removeRecommendation(id) {
-    if (!window.confirm('Retirer cette recommandation du carnet ?')) return;
+    if (!window.confirm(t('carnetRemoveConfirm'))) return;
     sb.from('pro_recommendations')
       .delete()
       .eq('id', id)
@@ -2085,27 +2497,29 @@
     var statusEl = document.getElementById('carnetSearchStatus');
     var resultsEl = document.getElementById('carnetResultsList');
     resultsEl.innerHTML = '';
+    lastCarnetResults = [];
     if (!query) return;
 
     statusEl.style.display = 'block';
-    statusEl.textContent = 'Recherche…';
+    statusEl.textContent = t('carnetSearching');
 
     sb.functions.invoke('search-places', { body: { action: 'search', query: query } })
       .then(function (res) {
         if (res.error) {
-          statusEl.textContent = 'Recherche indisponible, réessaie.';
+          statusEl.textContent = t('carnetSearchUnavailable');
           return;
         }
         var results = (res.data && res.data.results) || [];
         if (!results.length) {
-          statusEl.textContent = 'Aucun résultat.';
+          statusEl.textContent = t('carnetNoResults');
           return;
         }
         statusEl.style.display = 'none';
+        lastCarnetResults = results;
         renderCarnetResults(results);
       })
       .catch(function () {
-        statusEl.textContent = 'Recherche indisponible, réessaie.';
+        statusEl.textContent = t('carnetSearchUnavailable');
       });
   }
   document.getElementById('carnetSearchBtn').addEventListener('click', doCarnetSearch);
@@ -2123,7 +2537,7 @@
       var textWrap = document.createElement('div');
       var nameEl = document.createElement('div');
       nameEl.className = 'carnet-result-name';
-      nameEl.textContent = r.name || 'Sans nom';
+      nameEl.textContent = r.name || t('carnetNoName');
       textWrap.appendChild(nameEl);
       if (r.address) {
         var addrEl = document.createElement('div');
@@ -2164,31 +2578,31 @@
     panel.addEventListener('click', function (e) { e.stopPropagation(); });
 
     var label = document.createElement('label');
-    label.textContent = 'Catégorie';
+    label.textContent = t('carnetCategoryLabel');
     panel.appendChild(label);
 
     var select = document.createElement('select');
     var placeholderOpt = document.createElement('option');
     placeholderOpt.value = '';
-    placeholderOpt.textContent = 'Choisir une catégorie…';
+    placeholderOpt.textContent = t('carnetCategoryPlaceholder');
     select.appendChild(placeholderOpt);
-    CARNET_CATEGORIES.forEach(function (c) {
+    CARNET_CATEGORY_IDS.forEach(function (id) {
       var opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = c.label;
+      opt.value = id;
+      opt.textContent = t(CARNET_CATEGORY_I18N_KEY[id]);
       select.appendChild(opt);
     });
     panel.appendChild(select);
 
     var errorEl = document.createElement('p');
     errorEl.className = 'carnet-result-category-error';
-    errorEl.textContent = 'Choisis une catégorie pour continuer.';
+    errorEl.textContent = t('carnetCategoryError');
     panel.appendChild(errorEl);
 
     var confirmBtn = document.createElement('button');
     confirmBtn.type = 'button';
     confirmBtn.className = 'btn-outline carnet-result-category-confirm';
-    confirmBtn.textContent = 'Ajouter au carnet';
+    confirmBtn.textContent = t('carnetCategoryConfirm');
     confirmBtn.addEventListener('click', function () {
       if (!select.value) {
         errorEl.style.display = 'block';
@@ -2226,7 +2640,7 @@
             console.error('[pro] add recommendation error', res.error);
             var statusEl = document.getElementById('carnetSearchStatus');
             statusEl.style.display = 'block';
-            statusEl.textContent = "Impossible d'ajouter ce lieu.";
+            statusEl.textContent = t('carnetAddError');
             itemEl.style.opacity = '';
             itemEl.style.pointerEvents = '';
             panelEl.style.pointerEvents = '';
@@ -2235,6 +2649,7 @@
           recommendations.unshift(res.data);
           renderCarnetSaved();
           document.getElementById('carnetResultsList').innerHTML = '';
+          lastCarnetResults = [];
           document.getElementById('carnetSearchInput').value = '';
         });
     }
@@ -2270,12 +2685,12 @@
     var el = document.getElementById('saveStatus');
     var text = document.getElementById('saveStatusText');
     el.className = 'save-status ' + state;
-    if (state === 'saving') text.textContent = 'Enregistrement…';
+    if (state === 'saving') text.textContent = t('saveStatusSaving');
     else if (state === 'saved') {
-      text.textContent = 'Enregistré';
+      text.textContent = t('saveStatusSaved');
       showSaveToast();
     }
-    else if (state === 'error') text.textContent = "Échec de l'enregistrement";
+    else if (state === 'error') text.textContent = t('saveStatusError');
     else text.textContent = '—';
   }
 
@@ -2345,7 +2760,7 @@
 
     document.getElementById('p-name').textContent = profile.business_name || '—';
     document.getElementById('p-city').textContent = cityLabel ? cityLabel.toUpperCase() : '—';
-    document.getElementById('p-address').textContent = profile.address || 'Adresse non renseignée';
+    document.getElementById('p-address').textContent = profile.address || t('previewNoAddress');
 
     var phoneRow = document.getElementById('p-phone-row');
     if (profile.phone) {
@@ -2447,7 +2862,7 @@
       // initial, pour ne pas perturber le cache navigateur en usage normal.
       function appendPhoto(container, url) {
         var img = document.createElement('img');
-        img.alt = profile.business_name || 'Photo';
+        img.alt = profile.business_name || t('previewPhotoAlt');
         img.style.cursor = 'pointer';
         img.addEventListener('click', function () { openLightbox(url); });
         var attempt = 0;
@@ -2496,7 +2911,7 @@
         link.rel = 'noopener noreferrer';
 
         var titleSpan = document.createElement('span');
-        titleSpan.textContent = doc.title || doc.url || 'Document';
+        titleSpan.textContent = doc.title || doc.url || t('previewDocAlt');
         link.appendChild(titleSpan);
         link.insertAdjacentHTML('beforeend', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>');
 
@@ -2512,7 +2927,7 @@
     var reserveBtn = document.getElementById('p-reserve-btn');
     if (profile.reservation_url) {
       reserveBtn.href = profile.reservation_url;
-      reserveBtn.textContent = profile.reservation_label || 'Réserver';
+      reserveBtn.textContent = profile.reservation_label || t('previewReserveBtn');
       reserveWrap.style.display = 'block';
     } else {
       reserveWrap.style.display = 'none';
@@ -2533,7 +2948,7 @@
   document.getElementById('p-menu-toggle').addEventListener('click', function () {
     var list = document.getElementById('p-menu-list');
     var open = list.classList.toggle('open');
-    this.textContent = open ? 'Masquer le menu' : 'Voir le menu';
+    this.textContent = open ? t('previewHideMenu') : t('previewShowMenu');
     this.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
   document.getElementById('p-hours-toggle').addEventListener('click', function () {
