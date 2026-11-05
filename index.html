@@ -106,6 +106,10 @@
     opacity: 0.95; max-width: 460px; margin-bottom: 52px;
     text-shadow: 0 1px 12px rgba(0,0,0,0.5);
   }
+  .hero-buttons {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 16px;
+  }
   .btn-hero {
     display: inline-block; padding: 17px 52px;
     background: #fff; color: var(--black);
@@ -272,10 +276,13 @@
   </div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <p class="hero-eyebrow">Disponible sur iOS</p>
+    <p class="hero-eyebrow">Disponible sur iOS et Android</p>
     <h1 class="hero-title">Tes lieux,<br>tes affinités.</h1>
-    <p class="hero-sub">Enregistre tes adresses favorites et découvre des personnes qui partagent les mêmes endroits. Pas par hasard — par goût.</p>
-    <a href="https://apps.apple.com/app/id6764069354" class="btn-hero">Télécharger sur l'App Store</a>
+    <p class="hero-sub">Enregistre tes adresses favorites et découvre des personnes qui partagent les mêmes endroits. Pas par hasard, par goût.</p>
+    <div class="hero-buttons">
+      <a href="https://apps.apple.com/app/id6764069354" class="btn-hero">Télécharger sur l'App Store</a>
+      <a href="https://play.google.com/store/apps/details?id=com.wenno.app" class="btn-hero">Télécharger sur Google Play</a>
+    </div>
   </div>
   <div class="scroll-hint">
     <div class="scroll-line"></div>
