@@ -1682,11 +1682,20 @@
     });
   }
 
+  // Adresse affichee : texte de repli (address_fallback_label, migration 087
+  // cote app) quand l'etablissement n'a pas d'adresse Google
+  // (is_address_unavailable), comme sur la fiche mobile. Les deux colonnes
+  // sont gerees en SQL admin uniquement — jamais envoyees par doSave().
+  function displayAddress() {
+    if (profile.is_address_unavailable) return profile.address_fallback_label || '';
+    return profile.address || '';
+  }
+
   function fillForm() {
     document.getElementById('editorHeaderTitle').textContent = profile.business_name || t('defaultListingTitle');
 
     document.getElementById('ro-business_name').textContent = profile.business_name || '—';
-    document.getElementById('ro-address').textContent = profile.address || '—';
+    document.getElementById('ro-address').textContent = displayAddress() || '—';
     document.getElementById('ro-phone').textContent = profile.phone || '—';
 
     document.getElementById('f-description').value = profile.description || '';
@@ -2760,7 +2769,7 @@
 
     document.getElementById('p-name').textContent = profile.business_name || '—';
     document.getElementById('p-city').textContent = cityLabel ? cityLabel.toUpperCase() : '—';
-    document.getElementById('p-address').textContent = profile.address || t('previewNoAddress');
+    document.getElementById('p-address').textContent = displayAddress() || t('previewNoAddress');
 
     var phoneRow = document.getElementById('p-phone-row');
     if (profile.phone) {
